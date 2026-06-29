@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Presupuesto mensual</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js">
+  </script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #eef2f7;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 2rem 1rem;
+      color: #1e1e2a;
+    }
+
+    .presupuesto-wrapper {
+      max-width: 1200px;
+      width: 100%;
+      background: #ffffff;
+      border-radius: 24px;
+      box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.15);
+      padding: 2rem 2.5rem;
+    }
+
+    .header-presupuesto {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 2px solid #2c3e50;
+      padding-bottom: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .logo-area {
+      display: flex;
+      align-items: center;
+      gap: 1.2rem;
+    }
+
+    .logo-placeholder {
+      width: 70px;
+      height: 70px;
+      border-radius: 12px;
+      background: #f0f4f8;
+      border: 2px dashed #b0c4d9;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: 0.2s;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    .logo-placeholder:hover { border-color: #2c3e50; background: #e8edf4; }
+    .logo-placeholder img { width: 100%; height: 100%; object-fit: contain; display: none; }
+    .logo-placeholder i { font-size: 1.6rem; color: #5a6c7d; opacity: 0.5; }
+    .logo-placeholder .logo-texto { font-size: 0.5rem; color: #7a8a9a; font-weight: 500; letter-spacing: 0.04em; margin-top: 2px; }
+    .logo-upload-input { display: none; }
+
+    .titulo-fecha { text-align: right; }
+    .titulo-fecha .titulo { font-size: 2.2rem; font-weight: 700; color: #1a2a3a; letter-spacing: -0.02em; }
+    .titulo-fecha .fecha-edit { display: inline-block; margin-top: 0.2rem; font-size: 0.9rem; color: #3a4a5a; }
+    .titulo-fecha .fecha-edit input {
+      border: none; border-bottom: 2px solid #d0d8e0; background: transparent;
+      padding: 0.2rem 0.4rem; font-size: 0.9rem; color: #1a2a3a; outline: none;
+      font-family: inherit; width: 140px;
+    }
+    .titulo-fecha .fecha-edit input:focus { border-bottom-color: #2c3e50; }
+
+    .instrucciones {
+      background: #f7f9fc; padding: 0.8rem 1.2rem; border-radius: 10px;
+      border-left: 4px solid #2c3e50; font-size: 0.9rem; color: #2a3a4a;
+      margin-bottom: 1.8rem; line-height: 1.5;
+    }
+    .instrucciones .display-text {
+      background: transparent; border: none; outline: none; width: 100%;
+      color: #1a2a3a; font-size: 0.9rem; font-family: inherit;
+    }
+    .instrucciones .display-text:focus { background: #f0f4fa; border-radius: 4px; padding: 0.1rem 0.2rem; }
+    .instrucciones .display-text:empty::before {
+      content: "Cómo se usa: ingresa tu presupuesto para cada categoría de la tabla Resumen por categoría. Ingresa las transacciones en la hoja Transacciones para comparar tu gasto real con tu presupuesto.";
+      color: #9aabba; font-style: italic; font-weight: 300;
+    }
+
+    /* === GRÁFICOS: TAMAÑO NORMAL === */
+    .graficos-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      margin-bottom: 1.8rem;
+    }
+
+    .grafico-card {
+      background: #f7f9fc;
+      border-radius: 16px;
+      padding: 1rem 1.2rem;
+      border: 1px solid #e6ecf3;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 320px;
+    }
+
+    .grafico-card h4 {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #4a5a6a;
+      font-weight: 700;
+      margin-bottom: 0.3rem;
+    }
+
+    /* === CONTENEDOR CON ALTURA FIJA === */
+    .grafico-card .chart-container {
+      width: 100%;
+      height: 350px;
+      position: relative;
+    }
+
+    .grafico-card .chart-container canvas {
+      width: 100% !important;
+      height: 100% !important;
+      
+    }
+
+    /* Leyenda debajo del donut */
+    .leyenda-donut {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.2rem 0.6rem;
+      margin-top: 0.4rem;
+      font-size: 0.65rem;
+      color: #1a2a3a;
+      width: 100%;
+    }
+    .leyenda-donut .item-leyenda {
+      display: flex;
+      align-items: center;
+      gap: 0.2rem;
+    }
+    .leyenda-donut .color-box {
+      width: 10px;
+      height: 10px;
+      border-radius: 3px;
+      flex-shrink: 0;
+      border: 1px solid rgba(0, 0, 0, 0.1);
+    }
+    .leyenda-donut .leyenda-texto {
+      background: transparent; border: none; outline: none;
+      font-size: 0.65rem; color: #1a2a3a; font-family: inherit;
+      padding: 0.1rem 0.2rem; min-width: 25px;
+    }
+    .leyenda-donut .leyenda-texto:focus { background: #eef4fa; border-radius: 4px; }
+    .leyenda-donut .leyenda-texto:empty::before { content: "Cat"; color: #9aabba; font-style: italic; font-weight: 300; }
+
+    /* Tabla */
+    .tabla-container { overflow-x: auto; margin-top: 0.5rem; }
+    table.presupuesto-table {
+      width: 100%; border-collapse: collapse; font-size: 0.9rem;
+    }
+    table.presupuesto-table thead th {
+      background: #2c3e50; color: #ffffff; padding: 0.6rem 0.5rem;
+      text-align: left; font-weight: 600; font-size: 0.75rem;
+      text-transform: uppercase; letter-spacing: 0.04em;
+    }
+    table.presupuesto-table thead th:last-child { text-align: right; padding-right: 1rem; }
+    table.presupuesto-table thead th:nth-child(2),
+    table.presupuesto-table thead th:nth-child(3) { text-align: right; padding-right: 0.8rem; }
+
+    table.presupuesto-table tbody td {
+      padding: 0.4rem 0.5rem; border-bottom: 1px solid #e6ecf3;
+      vertical-align: middle; color: #1a2a3a;
+    }
+    table.presupuesto-table tbody td:last-child { text-align: right; padding-right: 1rem; }
+    table.presupuesto-table tbody td:nth-child(2),
+    table.presupuesto-table tbody td:nth-child(3) { text-align: right; padding-right: 0.8rem; }
+    table.presupuesto-table tbody tr:last-child td { border-bottom: 2px solid #2c3e50; font-weight: 700; }
+
+    table.presupuesto-table .display-text {
+      background: transparent; border: none; outline: none;
+      font-size: 0.9rem; color: #1a2a3a; font-family: inherit;
+      width: 100%; padding: 0.1rem 0.2rem; text-align: inherit;
+    }
+    table.presupuesto-table .display-text:focus { background: #eef4fa; border-radius: 4px; }
+    table.presupuesto-table .display-text:empty::before {
+      content: attr(data-placeholder);
+      color: #9aabba; font-style: italic; font-weight: 300;
+    }
+
+    .table-actions {
+      display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: center; margin-top: 0.8rem;
+    }
+    .btn-outline-dark {
+      background: transparent; border: 1.5px solid #2c3e50; color: #2c3e50;
+      padding: 0.3rem 1rem; border-radius: 40px; font-weight: 600; font-size: 0.75rem;
+      cursor: pointer; transition: 0.15s; display: inline-flex; align-items: center; gap: 0.3rem;
+    }
+    .btn-outline-dark:hover { background: #2c3e50; color: #fff; box-shadow: 0 6px 12px -6px rgba(44,62,80,0.3); }
+
+    .pdf-actions { display: flex; justify-content: flex-end; margin-top: 1.5rem; }
+    .btn-pdf {
+      background: #1e2a3a; border: none; color: #fff;
+      padding: 0.7rem 2.2rem; border-radius: 60px; font-weight: 600; font-size: 0.9rem;
+      cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 0.5rem;
+      box-shadow: 0 10px 20px -8px rgba(0,0,0,0.2);
+    }
+    .btn-pdf:hover { background: #2c3e50; transform: scale(1.01); box-shadow: 0 16px 28px -10px rgba(44,62,80,0.3); }
+
+    @media (max-width: 800px) {
+      .presupuesto-wrapper { padding: 1.2rem; }
+      .graficos-row { grid-template-columns: 1fr; gap: 1rem; }
+      .header-presupuesto { flex-direction: column; align-items: stretch; gap: 0.8rem; }
+      .titulo-fecha { text-align: left; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="presupuesto-wrapper" id="presupuestoApp">
+
+  <div class="header-presupuesto">
+    <div class="logo-area">
+      <div class="logo-placeholder" id="logoPlaceholder" title="Haz clic para subir el logo">
+        <i class="fas fa-image" id="logoIcon"></i>
+        <span class="logo-texto">SUBIR LOGO</span>
+        <img id="logoImg" alt="Logo" />
+      </div>
+      <input type="file" id="logoUpload" class="logo-upload-input" accept="image/*" />
+    </div>
+    <div class="titulo-fecha">
+      <div class="titulo">Presupuesto mensual</div>
+      <div class="fecha-edit">F. <input type="date" id="fechaPresupuesto" /></div>
+    </div>
+  </div>
+
+  <div class="instrucciones">
+    <span class="display-text" contenteditable="true" id="instruccionesTexto"></span>
+  </div>
+
+  <div class="graficos-row">
+    <div class="grafico-card">
+      <h4>Resumen por categoría</h4>
+      <div class="chart-container">
+        <canvas id="donutChart"></canvas>
+      </div>
+      <div class="leyenda-donut" id="leyendaDonut"></div>
+    </div>
+    <div class="grafico-card">
+      <h4>Presupuesto vs. datos reales</h4>
+      <div class="chart-container">
+        <canvas id="barChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <h3 style="font-weight:600; color:#1a2a3a; margin-bottom:0.4rem; font-size:1rem;">Resumen por categoría</h3>
+
+  <div class="tabla-container">
+    <table class="presupuesto-table" id="tablaPresupuesto">
+      <thead>
+        <tr>
+          <th>Categoría</th>
+          <th style="text-align:right;">Presupuesto</th>
+          <th style="text-align:right;">Real</th>
+          <th style="text-align:right;">Diferencia</th>
+        </tr>
+      </thead>
+      <tbody id="tablaBody"></tbody>
+    </table>
+  </div>
+
+  <div class="table-actions">
+    <button class="btn-outline-dark" id="addRowBtn"><i class="fas fa-plus-circle"></i> Añadir fila</button>
+    <button class="btn-outline-dark" id="removeRowBtn" style="border-color:#7a8a9a; color:#5a6a7a;"><i class="fas fa-trash-alt"></i> Eliminar fila</button>
+  </div>
+
+  <div class="pdf-actions">
+    <button class="btn-pdf" id="pdfBtn"><i class="fas fa-file-pdf"></i> Descargar PDF</button>
+  </div>
+
+</div>
+
+<script>
+  (function() {
+    "use strict";
+
+    const tbody = document.getElementById('tablaBody');
+    const addBtn = document.getElementById('addRowBtn');
+    const removeBtn = document.getElementById('removeRowBtn');
+    const leyendaDonut = document.getElementById('leyendaDonut');
+
+    const logoPlaceholder = document.getElementById('logoPlaceholder');
+    const logoInput = document.getElementById('logoUpload');
+    const logoImg = document.getElementById('logoImg');
+    const logoIcon = document.getElementById('logoIcon');
+    const logoTexto = document.querySelector('.logo-texto');
+
+    const fechaInput = document.getElementById('fechaPresupuesto');
+    if (!fechaInput.value) {
+      const hoy = new Date();
+      const yyyy = hoy.getFullYear();
+      const mm = String(hoy.getMonth() + 1).padStart(2, '0');
+      const dd = String(hoy.getDate()).padStart(2, '0');
+      fechaInput.value = `${yyyy}-${mm}-${dd}`;
+    }
+
+    const datosEjemplo = [
+      { categoria: 'Auto', presupuesto: 2800, real: 2400 },
+      { categoria: 'Entretenimiento', presupuesto: 200, real: 100 },
+      { categoria: 'Comida', presupuesto: 3800, real: 2000 },
+      { categoria: 'Casa', presupuesto: 2800, real: 2800 },
+      { categoria: 'Gastos médicos', presupuesto: 800, real: 200 },
+      { categoria: 'Artículos personales', presupuesto: 2800, real: 200 },
+      { categoria: 'Viejas', presupuesto: 4400, real: 3800 },
+      { categoria: 'Suministros', presupuesto: 1800, real: 100 },
+      { categoria: 'Otros', presupuesto: 200, real: 100 }
+    ];
+
+    const coloresDonut = [
+      '#4a90d9', '#2ecc71', '#f39c12', '#9b59b6', '#e74c3c',
+      '#1abc9c', '#e67e22', '#3498db', '#2c3e50'
+    ];
+
+    let donutChart, barChart;
+
+    function initCharts() {
+      const ctxDonut = document.getElementById('donutChart').getContext('2d');
+      const ctxBar = document.getElementById('barChart').getContext('2d');
+
+      const cats = datosEjemplo.map(d => d.categoria);
+      const reales = datosEjemplo.map(d => d.real);
+
+      donutChart = new Chart(ctxDonut, {
+        type: 'doughnut',
+        data: {
+          labels: cats,
+          datasets: [{
+            data: reales,
+            backgroundColor: coloresDonut.slice(0, reales.length),
+            borderWidth: 2,
+            borderColor: '#ffffff'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          cutout: '65%'
+        }
+      });
+
+      barChart = new Chart(ctxBar, {
+        type: 'bar',
+        data: {
+          labels: cats,
+          datasets: [{
+            label: 'Presupuesto',
+            data: datosEjemplo.map(d => d.presupuesto),
+            backgroundColor: '#2ecc71',
+            borderColor: '#27ae60',
+            borderWidth: 1
+          }, {
+            label: 'Real',
+            data: reales,
+            backgroundColor: '#3498db',
+            borderColor: '#2980b9',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: true,
+              position: 'top',
+              labels: { boxWidth: 12, padding: 6, font: { size: 9 } }
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              grid: { color: '#e6ecf3' }
+            },
+            x: {
+              grid: { display: false },
+              ticks: {
+                maxRotation: 90,
+                minRotation: 90,
+                font: { size: 8 }
+              }
+            }
+          }
+        }
+      });
+
+      actualizarLeyenda();
+    }
+
+    function actualizarLeyenda() {
+      const filas = tbody.querySelectorAll('tr:not(:last-child)');
+      const cats = [];
+      const reales = [];
+      let total = 0;
+
+      filas.forEach(row => {
+        const celdas = row.querySelectorAll('td');
+        if (celdas.length === 4) {
+          const cat = celdas[0].querySelector('.display-text')?.textContent || 'Sin nombre';
+          const real = parseFloat(celdas[2].querySelector('.display-text')?.textContent?.replace(/[$,]/g, '') || 0);
+          cats.push(cat);
+          reales.push(real);
+          total += real;
+        }
+      });
+
+      leyendaDonut.innerHTML = '';
+      cats.forEach((cat, i) => {
+        const pct = total > 0 ? ((reales[i] / total) * 100).toFixed(0) : 0;
+        const div = document.createElement('div');
+        div.className = 'item-leyenda';
+        div.innerHTML = `
+          <span class="color-box" style="background-color:${coloresDonut[i % coloresDonut.length]};"></span>
+          <span class="leyenda-texto" contenteditable="true" data-placeholder="Cat">${cat}</span>
+          <span>${pct}%</span>
+        `;
+        const texto = div.querySelector('.leyenda-texto');
+        texto.addEventListener('input', function() {
+          const filas2 = tbody.querySelectorAll('tr:not(:last-child)');
+          if (filas2[i]) {
+            const celdaCat = filas2[i].querySelector('td:first-child .display-text');
+            if (celdaCat) {
+              celdaCat.textContent = this.textContent;
+              actualizarGraficos();
+            }
+          }
+        });
+        leyendaDonut.appendChild(div);
+      });
+    }
+
+    function actualizarGraficos() {
+      const filas = tbody.querySelectorAll('tr:not(:last-child)');
+      const cats = [];
+      const pres = [];
+      const reales = [];
+
+      filas.forEach(row => {
+        const celdas = row.querySelectorAll('td');
+        if (celdas.length === 4) {
+          const cat = celdas[0].querySelector('.display-text')?.textContent || 'Sin nombre';
+          const p = parseFloat(celdas[1].querySelector('.display-text')?.textContent?.replace(/[$,]/g, '') || 0);
+          const r = parseFloat(celdas[2].querySelector('.display-text')?.textContent?.replace(/[$,]/g, '') || 0);
+          cats.push(cat);
+          pres.push(p);
+          reales.push(r);
+        }
+      });
+
+      if (donutChart) {
+        donutChart.data.labels = cats;
+        donutChart.data.datasets[0].data = reales;
+        donutChart.update();
+      }
+
+      if (barChart) {
+        barChart.data.labels = cats;
+        barChart.data.datasets[0].data = pres;
+        barChart.data.datasets[1].data = reales;
+        barChart.update();
+      }
+
+      actualizarLeyenda();
+      actualizarTotales();
+    }
+
+    function crearFila(categoria = '', presupuesto = '', real = '', diferencia = '') {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><span class="display-text" contenteditable="true" data-placeholder="Categoría">${categoria}</span></td>
+        <td style="text-align:right; padding-right:0.8rem;"><span class="display-text" contenteditable="true" data-placeholder="$0.00" data-align="right" style="text-align:right;">${presupuesto}</span></td>
+        <td style="text-align:right; padding-right:0.8rem;"><span class="display-text" contenteditable="true" data-placeholder="$0.00" data-align="right" style="text-align:right;">${real}</span></td>
+        <td style="text-align:right; padding-right:1rem;"><span class="display-text" contenteditable="true" data-placeholder="$0.00" data-align="right" style="text-align:right;">${diferencia}</span></td>
+      `;
+      const inputs = tr.querySelectorAll('.display-text');
+      inputs.forEach(inp => {
+        inp.addEventListener('input', function() { actualizarGraficos(); });
+      });
+      return tr;
+    }
+
+    function actualizarTotales() {
+      const filas = tbody.querySelectorAll('tr:not(:last-child)');
+      let totalPres = 0, totalReal = 0;
+
+      filas.forEach(row => {
+        const celdas = row.querySelectorAll('td');
+        if (celdas.length === 4) {
+          const p = parseFloat(celdas[1].querySelector('.display-text')?.textContent?.replace(/[$,]/g, '') || 0);
+          const r = parseFloat(celdas[2].querySelector('.display-text')?.textContent?.replace(/[$,]/g, '') || 0);
+          totalPres += p;
+          totalReal += r;
+        }
+      });
+
+      const totalDif = totalPres - totalReal;
+      const totalRow = tbody.lastElementChild;
+      if (totalRow) {
+        const celdas = totalRow.querySelectorAll('td');
+        if (celdas.length === 4) {
+          celdas[1].innerHTML = `<strong>$${totalPres.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}</strong>`;
+          celdas[2].innerHTML = `<strong>$${totalReal.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}</strong>`;
+          celdas[3].innerHTML = `<strong>$${totalDif.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}</strong>`;
+        }
+      }
+    }
+
+    function initFilas() {
+      tbody.innerHTML = '';
+      datosEjemplo.forEach(d => {
+        const pres = '$' + d.presupuesto.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        const real = '$' + d.real.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        const dif = '$' + (d.presupuesto - d.real).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        tbody.appendChild(crearFila(d.categoria, pres, real, dif));
+      });
+
+      const trTotal = document.createElement('tr');
+      trTotal.innerHTML = `
+        <td><strong>Total</strong></td>
+        <td style="text-align:right; padding-right:0.8rem;"><strong>$19,600.00</strong></td>
+        <td style="text-align:right; padding-right:0.8rem;"><strong>$9,700.00</strong></td>
+        <td style="text-align:right; padding-right:1rem;"><strong>$9,900.00</strong></td>
+      `;
+      tbody.appendChild(trTotal);
+      actualizarTotales();
+    }
+    initFilas();
+
+    addBtn.addEventListener('click', function() {
+      const tr = crearFila('', '', '', '');
+      tbody.insertBefore(tr, tbody.lastElementChild);
+      actualizarGraficos();
+    });
+
+    removeBtn.addEventListener('click', function() {
+      const filas = tbody.querySelectorAll('tr');
+      if (filas.length > 2) {
+        filas[filas.length - 2].remove();
+        actualizarGraficos();
+      } else {
+        alert('Debe haber al menos una fila de datos.');
+      }
+    });
+
+    logoPlaceholder.addEventListener('click', function() { logoInput.click(); });
+    logoInput.addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(ev) {
+          logoImg.src = ev.target.result;
+          logoImg.style.display = 'block';
+          logoIcon.style.display = 'none';
+          if (logoTexto) logoTexto.style.display = 'none';
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    setTimeout(() => {
+      initCharts();
+      actualizarGraficos();
+    }, 100);
+
+    // --- PDF ---
+    document.getElementById('pdfBtn').addEventListener('click', function() {
+      if (typeof html2canvas === 'undefined' || typeof jsPDF === 'undefined') {
+        const s1 = document.createElement('script');
+        s1.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+        s1.onload = function() {
+          const s2 = document.createElement('script');
+          s2.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+          s2.onload = function() { generarPDF(); };
+          document.head.appendChild(s2);
+        };
+        document.head.appendChild(s1);
+      } else {
+        generarPDF();
+      }
+    });
+
+    function generarPDF() {
+      const wrapper = document.getElementById('presupuestoApp');
+
+      const acciones = wrapper.querySelector('.table-actions');
+      const pdfBtn = wrapper.querySelector('.pdf-actions');
+      const addBtnOrig = wrapper.querySelector('#addRowBtn');
+      const removeBtnOrig = wrapper.querySelector('#removeRowBtn');
+
+      const accDisplay = acciones ? acciones.style.display : '';
+      const pdfDisplay = pdfBtn ? pdfBtn.style.display : '';
+      if (acciones) acciones.style.display = 'none';
+      if (pdfBtn) pdfBtn.style.display = 'none';
+      if (addBtnOrig) addBtnOrig.style.display = 'none';
+      if (removeBtnOrig) removeBtnOrig.style.display = 'none';
+
+      const logoIconEl = wrapper.querySelector('#logoIcon');
+      const logoTextEl = wrapper.querySelector('.logo-texto');
+      if (logoIconEl) logoIconEl.style.display = 'none';
+      if (logoTextEl) logoTextEl.style.display = 'none';
+
+      const wrapperWidth = wrapper.scrollWidth;
+      const wrapperHeight = wrapper.scrollHeight;
+
+      html2canvas(wrapper, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff',
+        logging: false,
+        width: wrapperWidth,
+        height: wrapperHeight,
+        windowWidth: wrapperWidth,
+        windowHeight: wrapperHeight,
+        onclone: function(doc) {
+          const titulo = doc.querySelector('.titulo-fecha .titulo');
+          if (titulo) {
+            titulo.style.background = 'none';
+            titulo.style.color = '#1a2a3a';
+            titulo.style.webkitTextFillColor = '#1a2a3a';
+          }
+          const ths = doc.querySelectorAll('table.presupuesto-table thead th');
+          ths.forEach(th => {
+            th.style.background = '#2c3e50';
+            th.style.color = '#ffffff';
+          });
+        }
+      }).then(function(canvas) {
+        if (acciones) acciones.style.display = accDisplay || '';
+        if (pdfBtn) pdfBtn.style.display = pdfDisplay || '';
+        if (addBtnOrig) addBtnOrig.style.display = '';
+        if (removeBtnOrig) removeBtnOrig.style.display = '';
+        if (logoIconEl) logoIconEl.style.display = '';
+        if (logoTextEl) logoTextEl.style.display = '';
+
+        const { jsPDF } = window.jspdf;
+        const imgWidth = canvas.width;
+        const imgHeight = canvas.height;
+        const pxToMm = 0.264583;
+        const pdfWidth = imgWidth * pxToMm;
+        const pdfHeight = imgHeight * pxToMm;
+
+        const pdf = new jsPDF({
+          orientation: pdfWidth > pdfHeight ? 'l' : 'p',
+          unit: 'mm',
+          format: [pdfWidth, pdfHeight]
+        });
+
+        pdf.addImage(canvas, 'PNG', 0, 0, pdfWidth, pdfHeight);
+        pdf.save('presupuesto-mensual.pdf');
+
+      }).catch(function(err) {
+        console.error(err);
+        alert('Error al generar PDF: ' + err.message);
+        if (acciones) acciones.style.display = accDisplay || '';
+        if (pdfBtn) pdfBtn.style.display = pdfDisplay || '';
+        if (addBtnOrig) addBtnOrig.style.display = '';
+        if (removeBtnOrig) removeBtnOrig.style.display = '';
+        if (logoIconEl) logoIconEl.style.display = '';
+        if (logoTextEl) logoTextEl.style.display = '';
+      });
+    }
+
+  })();
+</script>
+
+</body>
+</html>
