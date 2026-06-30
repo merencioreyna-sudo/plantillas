@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Orden de Trabajo</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #f0f4f8;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 2rem 1rem;
+      color: #1e1e2a;
+    }
+
+    .orden-wrapper {
+      max-width: 1200px;
+      width: 100%;
+      background: #ffffff;
+      border-radius: 24px;
+      box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.15);
+      padding: 2rem 2.5rem;
+    }
+
+    .header-orden {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 2px solid #c0392b;
+      padding-bottom: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .logo-area {
+      display: flex;
+      align-items: center;
+      gap: 1.2rem;
+    }
+
+    .logo-placeholder {
+      width: 70px;
+      height: 70px;
+      border-radius: 12px;
+      background: #f0f4f8;
+      border: 2px dashed #b0c4d9;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: 0.2s;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    .logo-placeholder:hover { border-color: #c0392b; background: #e8edf4; }
+    .logo-placeholder img { width: 100%; height: 100%; object-fit: contain; display: none; }
+    .logo-placeholder i { font-size: 1.6rem; color: #5a6c7d; opacity: 0.5; }
+    .logo-placeholder .logo-texto { font-size: 0.5rem; color: #7a8a9a; font-weight: 500; letter-spacing: 0.04em; margin-top: 2px; }
+    .logo-upload-input { display: none; }
+
+    .titulo-fecha { text-align: right; }
+    .titulo-fecha .titulo { font-size: 2.2rem; font-weight: 700; color: #1a2a3a; letter-spacing: -0.02em; }
+    .titulo-fecha .fecha-edit { display: inline-block; margin-top: 0.2rem; font-size: 0.9rem; color: #3a4a5a; }
+    .titulo-fecha .fecha-edit input {
+      border: none; border-bottom: 2px solid #d0d8e0; background: transparent;
+      padding: 0.2rem 0.4rem; font-size: 0.9rem; color: #1a2a3a; outline: none;
+      font-family: inherit; width: 140px;
+    }
+    .titulo-fecha .fecha-edit input:focus { border-bottom-color: #c0392b; }
+
+    .titulo-destacados {
+      background: #f7f9fc;
+      padding: 1rem 1.5rem;
+      border-radius: 10px;
+      border-left: 4px solid #c0392b;
+      margin-bottom: 1.8rem;
+      color: #1a2a3a;
+    }
+    .titulo-destacados h2 {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #1a2a3a;
+      margin-bottom: 0.2rem;
+    }
+    .titulo-destacados .subtitulo {
+      font-size: 0.85rem;
+      color: #4a5a6a;
+    }
+    .titulo-destacados .subtitulo .display-text {
+      background: transparent;
+      border: none;
+      outline: none;
+      font-size: 0.85rem;
+      color: #4a5a6a;
+      font-family: inherit;
+      width: 100%;
+    }
+    .titulo-destacados .subtitulo .display-text:focus {
+      background: #f0f4fa;
+      border-radius: 4px;
+      padding: 0.1rem 0.2rem;
+    }
+    .titulo-destacados .subtitulo .display-text:empty::before {
+      content:"Haz clic aquí para escribir una descripción...";
+      color: #9aabba;
+      font-style: italic;
+      font-weight: 300;
+    }
+
+    .grid-4 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr 1fr;
+      gap: 1.2rem;
+      margin-bottom: 1.8rem;
+    }
+
+    .card-datos {
+      background: #ffffff;
+      border-radius: 14px;
+      padding: 1rem 1.2rem;
+      border: 2px solid #2c3e50;
+      box-shadow: 0 2px 8px rgba(44, 62, 80, 0.06);
+    }
+    .card-datos h4 {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #c0392b;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      border-bottom: 1px solid #dce4ec;
+      padding-bottom: 0.3rem;
+    }
+    .card-datos .campo {
+      font-size: 0.85rem;
+      color: #1a2a3a;
+      padding: 0.1rem 0;
+      display: flex;
+      align-items: baseline;
+      gap: 0.3rem;
+    }
+    .card-datos .campo .label {
+      font-weight: 600;
+      color: #4a5a6a;
+      font-size: 0.7rem;
+      min-width: 70px;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+    .card-datos .campo .display-text {
+      background: transparent;
+      border: none;
+      outline: none;
+      font-size: 0.85rem;
+      color: #1a2a3a;
+      font-family: inherit;
+      flex: 1;
+      padding: 0.1rem 0.2rem;
+      border-bottom: 2px solid transparent;
+      transition: 0.2s;
+    }
+    .card-datos .campo .display-text:focus {
+      border-bottom-color: #c0392b;
+      background: #f0f4fa;
+      border-radius: 4px;
+    }
+    .card-datos .campo .display-text:empty::before {
+      content: attr(data-placeholder);
+      color: #9aabba;
+      font-style: italic;
+      font-weight: 300;
+    }
+    .card-datos select {
+      padding: 0.2rem 1.2rem 0.2rem 0.5rem;
+      border: 2px solid #d0d8e0;
+      border-radius: 6px;
+      background: #ffffff;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: #1a2a3a;
+      outline: none;
+      font-family: inherit;
+      cursor: pointer;
+      appearance: auto;
+      flex: 1;
+    }
+    .card-datos select:focus { border-color: #c0392b; }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.2rem;
+      margin-bottom: 1.5rem;
+    }
+
+    /* --- TABLA DE MATERIALES --- */
+    .tabla-container {
+      overflow-x: auto;
+      margin-top: 0.8rem;
+      margin-bottom: 1.5rem;
+    }
+
+    table.materiales-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+    table.materiales-table thead th {
+      background: #2c3e50;
+      color: #ffffff;
+      padding: 0.6rem 0.5rem;
+      text-align: left;
+      font-weight: 600;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    table.materiales-table thead th:last-child { text-align: right; padding-right: 1rem; }
+    table.materiales-table thead th:nth-child(2),
+    table.materiales-table thead th:nth-child(3) { text-align: right; padding-right: 0.8rem; }
+
+    table.materiales-table tbody td {
+      padding: 0.4rem 0.5rem;
+      border-bottom: 1px solid #e6ecf3;
+      vertical-align: middle;
+      color: #1a2a3a;
+    }
+    table.materiales-table tbody td:last-child { text-align: right; padding-right: 1rem; }
+    table.materiales-table tbody td:nth-child(2),
+    table.materiales-table tbody td:nth-child(3) { text-align: right; padding-right: 0.8rem; }
+    table.materiales-table tbody tr:last-child td { border-bottom: 2px solid #2c3e50; font-weight: 700; }
+
+    table.materiales-table .display-text {
+      background: transparent;
+      border: none;
+      outline: none;
+      font-size: 0.9rem;
+      color: #1a2a3a;
+      font-family: inherit;
+      width: 100%;
+      padding: 0.1rem 0.2rem;
+      text-align: inherit;
+    }
+    table.materiales-table .display-text:focus {
+      background: #eef4fa;
+      border-radius: 4px;
+    }
+    table.materiales-table .display-text:empty::before {
+      content: attr(data-placeholder);
+      color: #9aabba;
+      font-style: italic;
+      font-weight: 300;
+    }
+
+    /* --- TAREAS DINÁMICAS --- */
+    .tareas-container {
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+      margin-top: 0.2rem;
+    }
+    .tareas-container .tarea-item {
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+    .tareas-container .tarea-item .display-text {
+      flex: 1;
+      font-size: 0.85rem;
+      padding: 0.1rem 0.2rem;
+      border-bottom: 1px dashed #dce4ec;
+      background: transparent;
+      border-top: none;
+      border-left: none;
+      border-right: none;
+      outline: none;
+      color: #1a2a3a;
+      font-family: inherit;
+    }
+    .tareas-container .tarea-item .display-text:focus {
+      border-bottom-color: #c0392b;
+      background: #f0f4fa;
+      border-radius: 4px;
+    }
+    .tareas-container .tarea-item .display-text:empty::before {
+      content: "• Nueva tarea";
+      color: #9aabba;
+      font-style: italic;
+      font-weight: 300;
+    }
+    .btn-tarea {
+      background: transparent;
+      border: 1px dashed #c0392b;
+      color: #c0392b;
+      padding: 0.1rem 0.6rem;
+      border-radius: 20px;
+      font-size: 0.65rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.15s;
+      font-family: inherit;
+      margin-top: 0.2rem;
+      align-self: flex-start;
+    }
+    .btn-tarea:hover {
+      background: #c0392b;
+      color: #fff;
+    }
+    .btn-tarea-eliminar {
+      background: transparent;
+      border: none;
+      color: #9aabba;
+      cursor: pointer;
+      font-size: 0.7rem;
+      padding: 0.1rem 0.2rem;
+      transition: 0.15s;
+    }
+    .btn-tarea-eliminar:hover {
+      color: #c0392b;
+    }
+
+    /* --- FIRMAS --- */
+    .firmas-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 3rem;
+      margin-top: 1.5rem;
+      padding-top: 1rem;
+      border-top: 2px solid #c0392b;
+    }
+    .firma-box {
+      flex: 1;
+      min-width: 200px;
+    }
+    .firma-box .firma-label {
+      font-weight: 600;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      color: #c0392b;
+      letter-spacing: 0.04em;
+      display: block;
+      margin-bottom: 0.3rem;
+    }
+    .firma-box .display-text {
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid #d0d8e0;
+      outline: none;
+      font-size: 0.9rem;
+      color: #1a2a3a;
+      font-family: inherit;
+      padding: 0.2rem 0.2rem;
+      width: 100%;
+      transition: 0.2s;
+    }
+    .firma-box .display-text:focus {
+      border-bottom-color: #c0392b;
+      background: #f0f4fa;
+      border-radius: 4px;
+    }
+    .firma-box .display-text:empty::before {
+      content: attr(data-placeholder);
+      color: #9aabba;
+      font-style: italic;
+      font-weight: 300;
+    }
+    .firma-box .firma-fecha {
+      font-size: 0.75rem;
+      color: #7a8a9a;
+      margin-top: 0.2rem;
+    }
+    .firma-box .firma-fecha input {
+      border: none;
+      border-bottom: 2px solid #d0d8e0;
+      background: transparent;
+      padding: 0.1rem 0.2rem;
+      font-size: 0.75rem;
+      color: #1a2a3a;
+      outline: none;
+      font-family: inherit;
+      width: 120px;
+    }
+    .firma-box .firma-fecha input:focus { border-bottom-color: #c0392b; }
+
+    /* --- BOTONES --- */
+    .table-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      align-items: center;
+      margin-top: 0.8rem;
+    }
+    .btn-outline-dark {
+      background: transparent;
+      border: 1.5px solid #2c3e50;
+      color: #2c3e50;
+      padding: 0.3rem 1rem;
+      border-radius: 40px;
+      font-weight: 600;
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: 0.15s;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+    .btn-outline-dark:hover {
+      background: #2c3e50;
+      color: #fff;
+      box-shadow: 0 6px 12px -6px rgba(44, 62, 80, 0.3);
+    }
+
+    .pdf-actions {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 1.5rem;
+    }
+    .btn-pdf {
+      background: #1e2a3a;
+      border: none;
+      color: #fff;
+      padding: 0.7rem 2.2rem;
+      border-radius: 60px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      box-shadow: 0 10px 20px -8px rgba(0, 0, 0, 0.2);
+    }
+    .btn-pdf:hover {
+      background: #c0392b;
+      transform: scale(1.01);
+      box-shadow: 0 16px 28px -10px rgba(192, 57, 43, 0.3);
+    }
+
+    @media (max-width: 900px) {
+      .grid-4 { grid-template-columns: 1fr 1fr; }
+      .grid-2 { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 600px) {
+      .orden-wrapper { padding: 1.2rem; }
+      .grid-4 { grid-template-columns: 1fr; }
+      .header-orden { flex-direction: column; align-items: stretch; gap: 0.8rem; }
+      .titulo-fecha { text-align: left; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="orden-wrapper" id="ordenApp">
+
+  <!-- HEADER -->
+  <div class="header-orden">
+    <div class="logo-area">
+      <div class="logo-placeholder" id="logoPlaceholder" title="Haz clic para subir el logo">
+        <i class="fas fa-image" id="logoIcon"></i>
+        <span class="logo-texto">SUBIR LOGO</span>
+        <img id="logoImg" alt="Logo" />
+      </div>
+      <input type="file" id="logoUpload" class="logo-upload-input" accept="image/*" />
+    </div>
+    <div class="titulo-fecha">
+      <div class="titulo">Orden de Trabajo</div>
+      <div class="fecha-edit">F. <input type="date" id="fechaOrden" /></div>
+    </div>
+  </div>
+
+  <!-- TÍTULO DESTACADOS -->
+  <div class="titulo-destacados">
+    <h2>Aspectos destacados de las órdenes de trabajo</h2>
+    <div class="subtitulo">
+      <span class="display-text" contenteditable="true" id="subtituloDestacados"></span>
+    </div>
+  </div>
+
+  <!-- GRID 4 TARJETAS -->
+  <div class="grid-4">
+    <div class="card-datos">
+      <h4>Contratista</h4>
+      <div class="campo"><span class="label">Empresa</span><span class="display-text" contenteditable="true" data-placeholder="Nombre de la empresa"></span></div>
+      <div class="campo"><span class="label">Dirección</span><span class="display-text" contenteditable="true" data-placeholder="Calle y número"></span></div>
+      <div class="campo"><span class="label">Ciudad</span><span class="display-text" contenteditable="true" data-placeholder="Ciudad, Estado, CP"></span></div>
+      <div class="campo"><span class="label">Teléfono</span><span class="display-text" contenteditable="true" data-placeholder="Número de teléfono"></span></div>
+      <div class="campo"><span class="label">Email</span><span class="display-text" contenteditable="true" data-placeholder="correo@empresa.com"></span></div>
+    </div>
+
+    <div class="card-datos">
+      <h4>Cliente</h4>
+      <div class="campo"><span class="label">Empresa</span><span class="display-text" contenteditable="true" data-placeholder="Nombre de la empresa"></span></div>
+      <div class="campo"><span class="label">Dirección</span><span class="display-text" contenteditable="true" data-placeholder="Calle y número"></span></div>
+      <div class="campo"><span class="label">Ciudad</span><span class="display-text" contenteditable="true" data-placeholder="Ciudad, Estado, CP"></span></div>
+      <div class="campo"><span class="label">Teléfono</span><span class="display-text" contenteditable="true" data-placeholder="Número de teléfono"></span></div>
+      <div class="campo"><span class="label">Email</span><span class="display-text" contenteditable="true" data-placeholder="correo@cliente.com"></span></div>
+    </div>
+
+    <div class="card-datos">
+      <h4>Pago</h4>
+      <div class="campo"><span class="label">Anticipo</span><span class="display-text" contenteditable="true" data-placeholder="$0.00"></span></div>
+      <div class="campo"><span class="label">Fecha límite</span>
+<span class="display-text" contenteditable="true">dd/mm/yyyy</span></div>
+      <div class="campo"><span class="label">Total</span><span class="display-text" contenteditable="true" data-placeholder="$0.00" style="font-weight:700;"></span></div>
+      <div class="campo"><span class="label">Pago vence</span><span class="display-text" contenteditable="true" data-placeholder="dd/mm/yyyy"></span></div>
+    </div>
+
+    <div class="card-datos">
+      <h4>Cronograma</h4>
+      <div class="campo"><span class="label">Nº Orden</span><span class="display-text" contenteditable="true" data-placeholder="ID-001"></span></div>
+      <div class="campo"><span class="label">Fecha</span><span class="display-text" contenteditable="true" data-placeholder="dd/mm/yyyy"></span></div>
+      <div class="campo"><span class="label">Inicio</span><span class="display-text" contenteditable="true" data-placeholder="Hora de inicio"></span></div>
+      <div class="campo"><span class="label">Fin</span><span class="display-text" contenteditable="true" data-placeholder="Hora de fin"></span></div>
+    </div>
+  </div>
+
+  <!-- SERVICIO (con Observaciones y Tareas dinámicas) -->
+  <div class="grid-2">
+    <!-- Columna izquierda: Servicio + Observaciones + Tareas dinámicas -->
+    <div class="card-datos">
+      <h4>Servicio</h4>
+      <div class="campo" style="flex-direction:column; align-items:stretch; gap:0.2rem;">
+        <span class="display-text" contenteditable="true" data-placeholder="Descripción detallada del servicio..." style="font-size:0.95rem; padding:0.5rem 0.3rem; border-bottom:2px solid transparent; min-height:80px; line-height:1.5;"></span>
+      </div>
+      <!-- Observaciones -->
+      <div class="campo" style="flex-direction:column; align-items:stretch; gap:0.2rem; margin-top:0.3rem;">
+        <span style="font-weight:600; font-size:0.7rem; color:#c0392b; text-transform:uppercase; letter-spacing:0.03em;">Observaciones</span>
+        <span class="display-text" contenteditable="true" data-placeholder="Notas adicionales sobre el trabajo..." style="font-size:0.85rem; padding:0.3rem 0.2rem; border-bottom:2px solid transparent; min-height:40px; line-height:1.4;"></span>
+      </div>
+      <!-- Lista de tareas (dinámica) -->
+      <div class="campo" style="flex-direction:column; align-items:stretch; gap:0.2rem; margin-top:0.3rem;">
+        <span style="font-weight:600; font-size:0.7rem; color:#c0392b; text-transform:uppercase; letter-spacing:0.03em;">Lista de tareas</span>
+        <div class="tareas-container" id="tareasContainer">
+          <div class="tarea-item">
+            <span class="display-text" contenteditable="true" data-placeholder="• Nueva tarea"></span>
+            <button class="btn-tarea-eliminar" title="Eliminar tarea"><i class="fas fa-times"></i></button>
+          </div>
+        </div>
+        <button class="btn-tarea" id="addTareaBtn"><i class="fas fa-plus"></i> Añadir tarea</button>
+      </div>
+    </div>
+
+    <!-- Columna derecha: Estado + Prioridad + Técnico -->
+    <div class="card-datos" style="display:flex; flex-direction:column; justify-content:center;">
+      <div class="campo" style="display:flex; flex-direction:column; align-items:stretch; gap:0.8rem;">
+        <div style="display:flex; flex-wrap:wrap; align-items:center; gap:0.5rem;">
+          <span style="font-weight:600; font-size:0.7rem; color:#c0392b; text-transform:uppercase; letter-spacing:0.03em; min-width:70px;">Estado</span>
+          <select id="estadoSelect" style="flex:1; padding:0.3rem 1.2rem 0.3rem 0.5rem; border:2px solid #d0d8e0; border-radius:6px; background:#ffffff; font-size:0.8rem; font-weight:500; color:#1a2a3a; outline:none; font-family:inherit; cursor:pointer; appearance:auto;">
+            <option value="pendiente" class="pendiente" selected>⏳ Pendiente</option>
+            <option value="proceso" class="proceso">🔄 En proceso</option>
+            <option value="terminado" class="terminado">✅ Terminado</option>
+          </select>
+        </div>
+        <div style="display:flex; flex-wrap:wrap; align-items:center; gap:0.5rem;">
+          <span style="font-weight:600; font-size:0.7rem; color:#c0392b; text-transform:uppercase; letter-spacing:0.03em; min-width:70px;">Prioridad</span>
+          <select id="prioridadSelect" style="flex:1; padding:0.3rem 1.2rem 0.3rem 0.5rem; border:2px solid #d0d8e0; border-radius:6px; background:#ffffff; font-size:0.8rem; font-weight:500; color:#1a2a3a; outline:none; font-family:inherit; cursor:pointer; appearance:auto;">
+            <option value="baja" class="prioridad-baja">🟢 Baja</option>
+            <option value="media" class="prioridad-media" selected>🟡 Media</option>
+            <option value="alta" class="prioridad-alta">🔴 Alta</option>
+          </select>
+        </div>
+        <div style="display:flex; flex-wrap:wrap; align-items:center; gap:0.5rem;">
+          <span style="font-weight:600; font-size:0.7rem; color:#c0392b; text-transform:uppercase; letter-spacing:0.03em; min-width:70px;">Técnico</span>
+          <span class="display-text" contenteditable="true" data-placeholder="Nombre del responsable" style="flex:1; font-size:0.85rem; padding:0.1rem 0.2rem; border-bottom:2px solid transparent; transition:0.2s;"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MATERIALES (opcional) -->
+  <h4 style="font-size:0.9rem; text-transform:uppercase; letter-spacing:0.05em; color:#c0392b; font-weight:700; margin-bottom:0.3rem;">Materiales (opcional)</h4>
+  <div class="tabla-container">
+    <table class="materiales-table" id="tablaMateriales">
+      <thead>
+        <tr>
+          <th>Material / Producto</th>
+          <th style="text-align:right;">Cantidad</th>
+          <th style="text-align:right;">Precio Unitario</th>
+          <th style="text-align:right;">Monto</th>
+        </tr>
+      </thead>
+      <tbody id="tablaBody"></tbody>
+    </table>
+  </div>
+
+  <div class="table-actions">
+    <button class="btn-outline-dark" id="addRowBtn"><i class="fas fa-plus-circle"></i> Añadir material</button>
+    <button class="btn-outline-dark" id="removeRowBtn" style="border-color:#7a8a9a; color:#5a6a7a;"><i class="fas fa-trash-alt"></i> Eliminar material</button>
+  </div>
+
+  <!-- FIRMAS -->
+  <div class="firmas-row">
+    <div class="firma-box">
+      <span class="firma-label">Firma del Cliente</span>
+      <span class="display-text" contenteditable="true" data-placeholder="Nombre y firma"></span>
+      <div class="firma-fecha">Fecha: <input type="date" id="firmaClienteFecha" /></div>
+    </div>
+    <div class="firma-box">
+      <span class="firma-label">Firma del Responsable</span>
+      <span class="display-text" contenteditable="true" data-placeholder="Nombre y firma"></span>
+      <div class="firma-fecha">Fecha: <input type="date" id="firmaResponsableFecha" /></div>
+    </div>
+  </div>
+
+  <div class="pdf-actions">
+    <button class="btn-pdf" id="pdfBtn"><i class="fas fa-file-pdf"></i> Descargar PDF</button>
+  </div>
+
+</div>
+
+<script>
+  (function() {
+    "use strict";
+
+    // ==================== ELEMENTOS ====================
+    const tbody = document.getElementById('tablaBody');
+    const addBtn = document.getElementById('addRowBtn');
+    const removeBtn = document.getElementById('removeRowBtn');
+    const tareasContainer = document.getElementById('tareasContainer');
+    const addTareaBtn = document.getElementById('addTareaBtn');
+
+    const logoPlaceholder = document.getElementById('logoPlaceholder');
+    const logoInput = document.getElementById('logoUpload');
+    const logoImg = document.getElementById('logoImg');
+    const logoIcon = document.getElementById('logoIcon');
+    const logoTexto = document.querySelector('.logo-texto');
+
+    const fechaOrden = document.getElementById('fechaOrden');
+    if (!fechaOrden.value) {
+      const hoy = new Date();
+      const yyyy = hoy.getFullYear();
+      const mm = String(hoy.getMonth() + 1).padStart(2, '0');
+      const dd = String(hoy.getDate()).padStart(2, '0');
+      fechaOrden.value = `${yyyy}-${mm}-${dd}`;
+    }
+
+    const firmaClienteFecha = document.getElementById('firmaClienteFecha');
+    if (!firmaClienteFecha.value) {
+      const hoy = new Date();
+      const yyyy = hoy.getFullYear();
+      const mm = String(hoy.getMonth() + 1).padStart(2, '0');
+      const dd = String(hoy.getDate()).padStart(2, '0');
+      firmaClienteFecha.value = `${yyyy}-${mm}-${dd}`;
+    }
+
+    const firmaResponsableFecha = document.getElementById('firmaResponsableFecha');
+    if (!firmaResponsableFecha.value) {
+      const hoy = new Date();
+      const yyyy = hoy.getFullYear();
+      const mm = String(hoy.getMonth() + 1).padStart(2, '0');
+      const dd = String(hoy.getDate()).padStart(2, '0');
+      firmaResponsableFecha.value = `${yyyy}-${mm}-${dd}`;
+    }
+
+    // ==================== CORREGIR "FECHA LÍMITE" AUTOMÁTICAMENTE ====================
+    document.addEventListener('DOMContentLoaded', function() {
+      const fechaLimite = document.querySelector('.card-datos:nth-child(3) .campo:nth-child(2) .display-text');
+      if (fechaLimite && fechaLimite.textContent.trim() === '$0.00') {
+        fechaLimite.textContent = 'dd/mm/yyyy';
+      }
+    });
+
+    // ==================== TAREAS DINÁMICAS ====================
+    function crearTarea(contenido = '') {
+      const div = document.createElement('div');
+      div.className = 'tarea-item';
+      const span = document.createElement('span');
+      span.className = 'display-text';
+      span.contentEditable = true;
+      span.dataset.placeholder = '• Nueva tarea';
+      if (contenido) span.textContent = contenido;
+
+      const btnEliminar = document.createElement('button');
+      btnEliminar.className = 'btn-tarea-eliminar';
+      btnEliminar.title = 'Eliminar tarea';
+      btnEliminar.innerHTML = '<i class="fas fa-times"></i>';
+      btnEliminar.addEventListener('click', function() {
+        if (tareasContainer.children.length > 1) {
+          div.remove();
+        } else {
+          alert('Debe haber al menos una tarea.');
+        }
+      });
+
+      div.appendChild(span);
+      div.appendChild(btnEliminar);
+      return div;
+    }
+
+    function initTareas() {
+      tareasContainer.innerHTML = '';
+      tareasContainer.appendChild(crearTarea(''));
+    }
+
+    addTareaBtn.addEventListener('click', function() {
+      tareasContainer.appendChild(crearTarea(''));
+    });
+
+    initTareas();
+
+    // ==================== MATERIALES ====================
+    function crearFila(material = '', cantidad = '', precio = '', monto = '') {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><span class="display-text" contenteditable="true" data-placeholder="Material">${material}</span></td>
+        <td style="text-align:right; padding-right:0.8rem;"><span class="display-text" contenteditable="true" data-placeholder="0" data-align="right" style="text-align:right;">${cantidad}</span></td>
+        <td style="text-align:right; padding-right:0.8rem;"><span class="display-text" contenteditable="true" data-placeholder="$0.00" data-align="right" style="text-align:right;">${precio}</span></td>
+        <td style="text-align:right; padding-right:1rem;"><span class="fila-total" style="font-weight:600;">${monto}</span></td>
+      `;
+
+      const cantSpan = tr.querySelector('td:nth-child(2) .display-text');
+      const precSpan = tr.querySelector('td:nth-child(3) .display-text');
+      const totalSpan = tr.querySelector('.fila-total');
+
+      function actualizarFila() {
+        const qty = parseFloat(cantSpan.textContent) || 0;
+        const price = parseFloat(precSpan.textContent) || 0;
+        totalSpan.textContent = (qty * price).toFixed(2);
+        actualizarTotales();
+      }
+
+      cantSpan.addEventListener('input', actualizarFila);
+      precSpan.addEventListener('input', actualizarFila);
+
+      return tr;
+    }
+
+    function actualizarTotales() {
+      let total = 0;
+      const filas = tbody.querySelectorAll('tr');
+      filas.forEach(row => {
+        const span = row.querySelector('.fila-total');
+        if (span) total += parseFloat(span.textContent) || 0;
+      });
+
+      const totalField = document.querySelector('.card-datos:nth-child(3) .campo:nth-child(3) .display-text');
+      if (totalField) {
+        totalField.textContent = '$' + total.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+      }
+    }
+
+    function initFilas() {
+      tbody.innerHTML = '';
+      actualizarTotales();
+    }
+    initFilas();
+
+    addBtn.addEventListener('click', function() {
+      tbody.appendChild(crearFila('', '', '', ''));
+      actualizarTotales();
+    });
+
+    removeBtn.addEventListener('click', function() {
+      const filas = tbody.querySelectorAll('tr');
+      if (filas.length > 0) {
+        filas[filas.length - 1].remove();
+        actualizarTotales();
+      } else {
+        alert('No hay materiales para eliminar.');
+      }
+    });
+
+    // ==================== LOGO ====================
+    logoPlaceholder.addEventListener('click', function() { logoInput.click(); });
+    logoInput.addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(ev) {
+          logoImg.src = ev.target.result;
+          logoImg.style.display = 'block';
+          logoIcon.style.display = 'none';
+          if (logoTexto) logoTexto.style.display = 'none';
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    // ==================== PDF ====================
+    document.getElementById('pdfBtn').addEventListener('click', function() {
+      if (typeof html2canvas === 'undefined' || typeof jsPDF === 'undefined') {
+        const s1 = document.createElement('script');
+        s1.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+        s1.onload = function() {
+          const s2 = document.createElement('script');
+          s2.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+          s2.onload = function() { generarPDF(); };
+          document.head.appendChild(s2);
+        };
+        document.head.appendChild(s1);
+      } else {
+        generarPDF();
+      }
+    });
+
+    function generarPDF() {
+      const wrapper = document.getElementById('ordenApp');
+
+      const acciones = wrapper.querySelector('.table-actions');
+      const pdfBtn = wrapper.querySelector('.pdf-actions');
+      const addBtnOrig = wrapper.querySelector('#addRowBtn');
+      const removeBtnOrig = wrapper.querySelector('#removeRowBtn');
+      const addTareaBtnOrig = wrapper.querySelector('#addTareaBtn');
+
+      const accDisplay = acciones ? acciones.style.display : '';
+      const pdfDisplay = pdfBtn ? pdfBtn.style.display : '';
+      const addTareaDisplay = addTareaBtnOrig ? addTareaBtnOrig.style.display : '';
+
+      if (acciones) acciones.style.display = 'none';
+      if (pdfBtn) pdfBtn.style.display = 'none';
+      if (addBtnOrig) addBtnOrig.style.display = 'none';
+      if (removeBtnOrig) removeBtnOrig.style.display = 'none';
+      if (addTareaBtnOrig) addTareaBtnOrig.style.display = 'none';
+
+      // Ocultar botones de eliminar tarea
+      const btnEliminarTareas = wrapper.querySelectorAll('.btn-tarea-eliminar');
+      btnEliminarTareas.forEach(btn => btn.style.display = 'none');
+
+      const logoIconEl = wrapper.querySelector('#logoIcon');
+      const logoTextEl = wrapper.querySelector('.logo-texto');
+      if (logoIconEl) logoIconEl.style.display = 'none';
+      if (logoTextEl) logoTextEl.style.display = 'none';
+
+      const wrapperWidth = wrapper.scrollWidth;
+      const wrapperHeight = wrapper.scrollHeight;
+
+      html2canvas(wrapper, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff',
+        logging: false,
+        width: wrapperWidth,
+        height: wrapperHeight,
+        windowWidth: wrapperWidth,
+        windowHeight: wrapperHeight,
+        onclone: function(doc) {
+          const titulo = doc.querySelector('.titulo-fecha .titulo');
+          if (titulo) {
+            titulo.style.background = 'none';
+            titulo.style.color = '#1a2a3a';
+            titulo.style.webkitTextFillColor = '#1a2a3a';
+          }
+          const ths = doc.querySelectorAll('table.materiales-table thead th');
+          ths.forEach(th => {
+            th.style.background = '#2c3e50';
+            th.style.color = '#ffffff';
+          });
+        }
+      }).then(function(canvas) {
+        if (acciones) acciones.style.display = accDisplay || '';
+        if (pdfBtn) pdfBtn.style.display = pdfDisplay || '';
+        if (addBtnOrig) addBtnOrig.style.display = '';
+        if (removeBtnOrig) removeBtnOrig.style.display = '';
+        if (addTareaBtnOrig) addTareaBtnOrig.style.display = addTareaDisplay || '';
+        btnEliminarTareas.forEach(btn => btn.style.display = '');
+        if (logoIconEl) logoIconEl.style.display = '';
+        if (logoTextEl) logoTextEl.style.display = '';
+
+        const { jsPDF } = window.jspdf;
+        const imgWidth = canvas.width;
+        const imgHeight = canvas.height;
+        const pxToMm = 0.264583;
+        const pdfWidth = imgWidth * pxToMm;
+        const pdfHeight = imgHeight * pxToMm;
+
+        const pdf = new jsPDF({
+          orientation: pdfWidth > pdfHeight ? 'l' : 'p',
+          unit: 'mm',
+          format: [pdfWidth, pdfHeight]
+        });
+
+        pdf.addImage(canvas, 'PNG', 0, 0, pdfWidth, pdfHeight);
+        pdf.save('orden-de-trabajo.pdf');
+
+      }).catch(function(err) {
+        console.error(err);
+        alert('Error al generar PDF: ' + err.message);
+        if (acciones) acciones.style.display = accDisplay || '';
+        if (pdfBtn) pdfBtn.style.display = pdfDisplay || '';
+        if (addBtnOrig) addBtnOrig.style.display = '';
+        if (removeBtnOrig) removeBtnOrig.style.display = '';
+        if (addTareaBtnOrig) addTareaBtnOrig.style.display = addTareaDisplay || '';
+        btnEliminarTareas.forEach(btn => btn.style.display = '');
+        if (logoIconEl) logoIconEl.style.display = '';
+        if (logoTextEl) logoTextEl.style.display = '';
+      });
+    }
+
+  })();
+</script>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Buscar todos los campos con "$0.00" en el texto
+    document.querySelectorAll('.display-text').forEach(function(el) {
+      if (el.textContent.trim() === '$0.00') {
+        // Verificar si el campo es "Fecha límite" por su posición en el DOM
+        const parentCampo = el.closest('.campo');
+        if (parentCampo) {
+          const label = parentCampo.querySelector('.label');
+          if (label && label.textContent.trim() === 'Fecha límite') {
+            el.textContent = 'dd/mm/yyyy';
+          }
+        }
+      }
+    });
+  });
+</script>
+
+</body>
+</html>
