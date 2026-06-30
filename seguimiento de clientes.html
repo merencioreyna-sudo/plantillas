@@ -1,0 +1,2178 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Seguimiento de Clientes - CRM</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js">
+  </script>
+  <style>
+    /* ===== RESET Y BASE ===== */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #f8fafc;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 2rem 1rem;
+      color: #111827;
+    }
+
+    .crm-wrapper {
+      max-width: 1400px;
+      width: 100%;
+      background: #ffffff;
+      border-radius: 20px;
+      box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.08);
+      overflow: hidden;
+      border: 1px solid #e5e7eb;
+    }
+
+    /* ===== BARRA SUPERIOR VERDE ===== */
+    .top-bar {
+      background: #22c55e;
+      padding: 0.7rem 2rem;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 64px;
+    }
+
+    .top-bar .logo-area {
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+    }
+
+    .top-bar .logo-placeholder {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.2);
+      border: 2px dashed rgba(255, 255, 255, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: 0.2s;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    .top-bar .logo-placeholder:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+    .top-bar .logo-placeholder img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: none;
+    }
+    .top-bar .logo-placeholder i {
+      font-size: 1.2rem;
+      color: #fff;
+      opacity: 0.8;
+    }
+    .top-bar .logo-placeholder .logo-texto {
+      display: none;
+    }
+    .logo-upload-input {
+      display: none;
+    }
+
+    .top-bar .tabs {
+      display: flex;
+      gap: 0.5rem;
+    }
+    .top-bar .tabs span {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.4rem 1.2rem;
+      border-radius: 30px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: 0.2s;
+      color: #fff;
+      opacity: 0.8;
+    }
+    .top-bar .tabs span i {
+      font-size: 0.85rem;
+    }
+    .top-bar .tabs span:hover {
+      opacity: 1;
+    }
+    .top-bar .tabs span.active {
+      background: #ffffff;
+      color: #16a34a;
+      opacity: 1;
+      font-weight: 600;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    }
+
+    .top-bar .search-filtro {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+    }
+    .top-bar .search-filtro .search-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    .top-bar .search-filtro .search-wrapper i {
+      position: absolute;
+      left: 12px;
+      color: #14532d;
+      font-size: 0.8rem;
+    }
+    .top-bar .search-filtro input {
+      padding: 0.35rem 0.8rem 0.35rem 2.2rem;
+      border: none;
+      border-radius: 30px;
+      background: #eaf7ef;
+      color: #14532d;
+      font-size: 0.8rem;
+      outline: none;
+      width: 200px;
+      font-family: inherit;
+    }
+    .top-bar .search-filtro input::placeholder {
+      color: #14532d;
+      opacity: 0.6;
+    }
+    .top-bar .search-filtro input:focus {
+      background: #d4f0e0;
+    }
+    .top-bar .search-filtro .filtro-btn {
+      background: #16a34a;
+      border: none;
+      color: #fff;
+      padding: 0.35rem 1rem;
+      border-radius: 30px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: 0.2s;
+      font-family: inherit;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .top-bar .search-filtro .filtro-btn:hover {
+      background: #15803d;
+    }
+
+    /* ===== CONTENIDO ===== */
+    .content {
+      padding: 1.5rem 2rem 2rem;
+    }
+
+    .content .titulo-tabla {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #111827;
+      margin-bottom: 1.5rem;
+    }
+
+    /* ===== PANEL DE RESUMEN ===== */
+    .resumen-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 1rem;
+      margin-bottom: 1.8rem;
+    }
+
+    .resumen-card {
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 1rem 1.2rem;
+      display: flex;
+      flex-direction: column;
+    }
+    .resumen-card .resumen-label {
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: #6b7280;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .resumen-card .resumen-valor {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #111827;
+      margin-top: 0.2rem;
+    }
+    .resumen-card .resumen-badge {
+      display: inline-block;
+      padding: 0.15rem 0.6rem;
+      border-radius: 30px;
+      font-size: 0.65rem;
+      font-weight: 600;
+      margin-top: 0.3rem;
+      align-self: flex-start;
+    }
+    .resumen-badge.activo {
+      background: #86efac;
+      color: #14532d;
+    }
+    .resumen-badge.proceso {
+      background: #fde68a;
+      color: #92400e;
+    }
+    .resumen-badge.inactivo {
+      background: #fca5a5;
+      color: #991b1b;
+    }
+    .resumen-badge.cerrado {
+      background: #e5e7eb;
+      color: #374151;
+    }
+
+    /* ===== TABLA ===== */
+    .tabla-container {
+      overflow-x: auto;
+    }
+
+    table.crm-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+      min-width: 1100px;
+    }
+    table.crm-table thead th {
+      background: #f8fafc;
+      color: #6b7280;
+      padding: 0.7rem 0.6rem;
+      text-align: left;
+      font-weight: 600;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    table.crm-table thead th:first-child {
+      width: 40px;
+      text-align: center;
+    }
+    table.crm-table thead th i {
+      margin-right: 0.3rem;
+      font-size: 0.7rem;
+      color: #6b7280;
+    }
+
+    table.crm-table tbody td {
+      padding: 0.7rem 0.6rem;
+      border-bottom: 1px solid #e5e7eb;
+      vertical-align: middle;
+      color: #111827;
+    }
+    table.crm-table tbody td:first-child {
+      text-align: center;
+    }
+
+    table.crm-table tbody tr {
+      transition: background 0.15s;
+    }
+    table.crm-table tbody tr:hover {
+      background: #f3f4f6;
+    }
+
+    /* ===== CHECKBOX ===== */
+    .checkbox-cliente {
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+      accent-color: #22c55e;
+      vertical-align: middle;
+    }
+
+    /* ===== COLUMNA CLIENTE ===== */
+    .cliente-info {
+      display: flex;
+      flex-direction: column;
+    }
+    .cliente-info .nombre {
+      font-weight: 700;
+      color: #111827;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+    .cliente-info .nombre .pin-icon {
+      color: #f4c542;
+      font-size: 0.7rem;
+    }
+
+    /* ===== BADGES ===== */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.3rem;
+      padding: 0.15rem 0.7rem;
+      border-radius: 30px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-align: center;
+      min-width: 50px;
+      height: 24px;
+      vertical-align: middle;
+    }
+
+    /* Estados */
+    .badge-estado.activo {
+      background: #86efac;
+      color: #14532d;
+    }
+    .badge-estado.proceso {
+      background: #fde68a;
+      color: #92400e;
+    }
+    .badge-estado.inactivo {
+      background: #fca5a5;
+      color: #991b1b;
+    }
+    .badge-estado.cerrado {
+      background: #e5e7eb;
+      color: #374151;
+    }
+
+    .badge-seguimiento.pendiente {
+      background: #fde68a;
+      color: #92400e;
+    }
+    .badge-seguimiento.progreso {
+      background: #93c5fd;
+      color: #1e3a8a;
+    }
+    .badge-seguimiento.completado {
+      background: #86efac;
+      color: #14532d;
+    }
+    .badge-seguimiento.atrasado {
+      background: #fca5a5;
+      color: #991b1b;
+    }
+
+    /* Prioridad */
+    .badge-prioridad.alta {
+      background: #8b5cf6;
+      color: #ffffff;
+    }
+    .badge-prioridad.media {
+      background: #60a5fa;
+      color: #ffffff;
+    }
+    .badge-prioridad.baja {
+      background: #34d399;
+      color: #ffffff;
+    }
+
+    /* ===== ÚLTIMO CONTACTO ===== */
+    .contacto-indicador {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+    .contacto-indicador .indicador {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+    .contacto-indicador .indicador.reciente {
+      background: #22c55e;
+    }
+    .contacto-indicador .indicador.medio {
+      background: #f59e0b;
+    }
+    .contacto-indicador .indicador.atrasado {
+      background: #ef4444;
+    }
+
+    /* ===== RESPONSABLE ===== */
+    .responsable-info {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .responsable-info .avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: #e5e7eb;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.65rem;
+      font-weight: 600;
+      color: #374151;
+      flex-shrink: 0;
+    }
+    .responsable-info .nombre-resp {
+      font-size: 0.8rem;
+      color: #111827;
+    }
+
+    /* ===== ACCIONES ===== */
+    .acciones {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+    .acciones .btn-accion {
+      background: transparent;
+      border: none;
+      color: #6b7280;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: 0.15s;
+      padding: 0.2rem;
+    }
+    .acciones .btn-accion:hover {
+      color: #111827;
+    }
+    .acciones .btn-accion.editar:hover {
+      color: #22c55e;
+    }
+    .acciones .btn-accion.eliminar:hover {
+      color: #ef4444;
+    }
+
+    /* ===== FILTROS ===== */
+    .filtros-container {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.8rem 1.2rem;
+      margin-bottom: 1.2rem;
+      padding: 0.8rem 1.2rem;
+      background: #f8fafc;
+      border-radius: 12px;
+      border: 1px solid #e5e7eb;
+    }
+    .filtros-container label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: #6b7280;
+    }
+    .filtros-container select,
+    .filtros-container input[type="text"] {
+      padding: 0.25rem 0.8rem 0.25rem 0.5rem;
+      border: 2px solid #e5e7eb;
+      border-radius: 8px;
+      background: #ffffff;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: #111827;
+      outline: none;
+      font-family: inherit;
+      cursor: pointer;
+      appearance: auto;
+      min-width: 120px;
+    }
+    .filtros-container select:focus,
+    .filtros-container input[type="text"]:focus {
+      border-color: #22c55e;
+    }
+    .filtros-container .btn-limpiar {
+      background: transparent;
+      border: 1.5px solid #e5e7eb;
+      color: #6b7280;
+      padding: 0.2rem 0.8rem;
+      border-radius: 30px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.15s;
+    }
+    .filtros-container .btn-limpiar:hover {
+      border-color: #111827;
+      color: #111827;
+    }
+
+    /* ===== MODALES ===== */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(4px);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+    .modal-overlay.activo {
+      display: flex;
+    }
+
+    .modal {
+      background: #ffffff;
+      border-radius: 20px;
+      padding: 2rem;
+      max-width: 520px;
+      width: 90%;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .modal .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.2rem;
+      padding-bottom: 0.8rem;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .modal .modal-header h3 {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #111827;
+    }
+    .modal .modal-header .btn-cerrar-modal {
+      background: transparent;
+      border: none;
+      font-size: 1.4rem;
+      color: #6b7280;
+      cursor: pointer;
+      transition: 0.15s;
+      padding: 0.2rem 0.5rem;
+    }
+    .modal .modal-header .btn-cerrar-modal:hover {
+      color: #111827;
+    }
+    .modal .modal-body {
+      margin-bottom: 1.2rem;
+    }
+    .modal .campo {
+      margin-bottom: 0.8rem;
+    }
+    .modal .campo label {
+      display: block;
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: #6b7280;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 0.2rem;
+    }
+    .modal .campo .valor {
+      font-size: 0.95rem;
+      color: #111827;
+      padding: 0.3rem 0;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .modal .campo input,
+    .modal .campo select,
+    .modal .campo textarea {
+      width: 100%;
+      padding: 0.4rem 0.6rem;
+      border: 2px solid #e5e7eb;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-family: inherit;
+      outline: none;
+      color: #111827;
+    }
+    .modal .campo input:focus,
+    .modal .campo select:focus,
+    .modal .campo textarea:focus {
+      border-color: #22c55e;
+    }
+    .modal .campo textarea {
+      min-height: 60px;
+      resize: vertical;
+    }
+    .modal .campo input[type="checkbox"] {
+      width: auto;
+      margin-right: 0.5rem;
+      accent-color: #22c55e;
+    }
+    .modal .campo .checkbox-group {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.3rem 0;
+    }
+    .modal .campo .checkbox-group label {
+      margin-bottom: 0;
+      cursor: pointer;
+    }
+    .modal .acciones-modal {
+      display: flex;
+      gap: 0.6rem;
+      justify-content: flex-end;
+      margin-top: 1.2rem;
+      border-top: 1px solid #e5e7eb;
+      padding-top: 1rem;
+    }
+    .modal .acciones-modal button {
+      padding: 0.4rem 1.2rem;
+      border-radius: 30px;
+      font-weight: 600;
+      font-size: 0.8rem;
+      cursor: pointer;
+      border: none;
+      transition: 0.15s;
+    }
+    .modal .acciones-modal .btn-guardar {
+      background: #22c55e;
+      color: #fff;
+    }
+    .modal .acciones-modal .btn-guardar:hover {
+      background: #16a34a;
+    }
+    .modal .acciones-modal .btn-cancelar {
+      background: #e5e7eb;
+      color: #374151;
+    }
+    .modal .acciones-modal .btn-cancelar:hover {
+      background: #d1d5db;
+    }
+    .modal .acciones-modal .btn-cerrar {
+      background: #e5e7eb;
+      color: #374151;
+    }
+    .modal .acciones-modal .btn-cerrar:hover {
+      background: #d1d5db;
+    }
+
+    /* ===== SECCIONES DE NAVEGACIÓN ===== */
+    .seccion {
+      display: none;
+    }
+    .seccion.activa {
+      display: block;
+    }
+
+    /* ===== BOTONES ===== */
+    .table-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      align-items: center;
+      margin-top: 1.5rem;
+    }
+    .btn-outline {
+      background: transparent;
+      border: 1.5px solid #111827;
+      color: #111827;
+      padding: 0.3rem 1rem;
+      border-radius: 40px;
+      font-weight: 600;
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: 0.15s;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+    .btn-outline:hover {
+      background: #111827;
+      color: #fff;
+      box-shadow: 0 6px 12px -6px rgba(17, 24, 39, 0.2);
+    }
+
+    .pdf-actions {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 1.5rem;
+    }
+    .btn-pdf {
+      background: #111827;
+      border: none;
+      color: #fff;
+      padding: 0.7rem 2.2rem;
+      border-radius: 60px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      box-shadow: 0 10px 20px -8px rgba(17, 24, 39, 0.15);
+    }
+    .btn-pdf:hover {
+      background: #1f2937;
+      transform: scale(1.01);
+      box-shadow: 0 16px 28px -10px rgba(17, 24, 39, 0.2);
+    }
+
+    /* ===== SELECTS OCULTOS ===== */
+    .estado-select,
+    .prioridad-select {
+      display: none;
+    }
+
+    /* ===== GRÁFICOS ===== */
+    .graficos-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin-bottom: 1.8rem;
+    }
+    .grafico-card {
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 1.2rem;
+    }
+    .grafico-card h4 {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #6b7280;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 0.5rem;
+    }
+    .grafico-card canvas {
+      max-height: 200px;
+      max-width: 100%;
+    }
+
+    /* ===== SEGUIMIENTO CARDS ===== */
+    .seguimiento-card {
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 1rem 1.2rem;
+      margin-bottom: 0.8rem;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      transition: 0.15s;
+    }
+    .seguimiento-card:hover {
+      background: #f8fafc;
+    }
+    .seguimiento-card .info {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 1rem 1.5rem;
+    }
+    .seguimiento-card .info .cliente {
+      font-weight: 600;
+      color: #111827;
+      min-width: 120px;
+    }
+    .seguimiento-card .info .detalle {
+      font-size: 0.8rem;
+      color: #6b7280;
+    }
+    .seguimiento-card .acciones-seguimiento {
+      display: flex;
+      gap: 0.4rem;
+    }
+
+    /* ===== KPI GRID ===== */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+      margin-bottom: 1.8rem;
+    }
+    .kpi-card {
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 1rem 1.2rem;
+    }
+    .kpi-card .kpi-label {
+      font-size: 0.7rem;
+      font-weight: 500;
+      color: #6b7280;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .kpi-card .kpi-valor {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #111827;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 1100px) {
+      .resumen-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+    @media (max-width: 900px) {
+      .resumen-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .kpi-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .graficos-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    @media (max-width: 700px) {
+      .top-bar {
+        flex-direction: column;
+        gap: 0.8rem;
+        align-items: stretch;
+        padding: 0.8rem 1rem;
+      }
+      .top-bar .logo-area {
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+      .top-bar .tabs {
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+      .top-bar .search-filtro {
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+      .top-bar .search-filtro input {
+        width: 100%;
+      }
+      .content {
+        padding: 1rem;
+      }
+      .resumen-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+      .kpi-grid {
+        grid-template-columns: 1fr;
+      }
+      .filtros-container {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .modal {
+        padding: 1.2rem;
+        max-width: 95%;
+      }
+      .seguimiento-card {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.5rem;
+      }
+      .seguimiento-card .info {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.3rem;
+      }
+      .graficos-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    @media (max-width: 500px) {
+      .resumen-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="crm-wrapper" id="crmApp">
+
+  <!-- ===== BARRA SUPERIOR VERDE ===== -->
+  <div class="top-bar">
+    <div class="logo-area">
+      <div class="logo-placeholder" id="logoPlaceholder" title="Haz clic para subir el logo">
+        <i class="fas fa-image" id="logoIcon"></i>
+        <span class="logo-texto">SUBIR LOGO</span>
+        <img id="logoImg" alt="Logo" />
+      </div>
+      <input type="file" id="logoUpload" class="logo-upload-input" accept="image/*" />
+      <div class="tabs">
+        <span class="active" data-seccion="clientes"><i class="fas fa-users"></i> Clientes</span>
+        <span data-seccion="seguimiento"><i class="fas fa-clock"></i> Seguimiento</span>
+        <span data-seccion="reportes"><i class="fas fa-chart-bar"></i> Reportes</span>
+      </div>
+    </div>
+    <div class="search-filtro">
+      <div class="search-wrapper">
+        <i class="fas fa-search"></i>
+        <input type="text" placeholder="Buscar..." id="buscador" />
+      </div>
+      <button class="filtro-btn" id="filtroBtn"><i class="fas fa-filter"></i> Filtro</button>
+    </div>
+  </div>
+
+  <!-- ===== CONTENIDO ===== -->
+  <div class="content">
+
+    <!-- ===== SECCIÓN CLIENTES ===== -->
+    <div class="seccion activa" id="seccion-clientes">
+      <div class="titulo-tabla">Seguimiento de Clientes</div>
+
+      <div class="resumen-grid">
+        <div class="resumen-card">
+          <span class="resumen-label">Total clientes</span>
+          <span class="resumen-valor" id="totalClientes">0</span>
+        </div>
+        <div class="resumen-card">
+          <span class="resumen-label">Activos</span>
+          <span class="resumen-valor" id="totalActivos">0</span>
+          <span class="resumen-badge activo">Activo</span>
+        </div>
+        <div class="resumen-card">
+          <span class="resumen-label">En proceso</span>
+          <span class="resumen-valor" id="totalProceso">0</span>
+          <span class="resumen-badge proceso">En proceso</span>
+        </div>
+        <div class="resumen-card">
+          <span class="resumen-label">Inactivos</span>
+          <span class="resumen-valor" id="totalInactivos">0</span>
+          <span class="resumen-badge inactivo">Inactivo</span>
+        </div>
+        <div class="resumen-card">
+          <span class="resumen-label">Cerrados</span>
+          <span class="resumen-valor" id="totalCerrados">0</span>
+          <span class="resumen-badge cerrado">Cerrado</span>
+        </div>
+      </div>
+
+      <div class="filtros-container">
+        <label for="filtroEstado">Estado</label>
+        <select id="filtroEstado">
+          <option value="todos">Todos</option>
+          <option value="Activo">Activo</option>
+          <option value="En proceso">En proceso</option>
+          <option value="Inactivo">Inactivo</option>
+          <option value="Cerrado">Cerrado</option>
+        </select>
+
+        <label for="filtroPrioridad">Prioridad</label>
+        <select id="filtroPrioridad">
+          <option value="todas">Todas</option>
+          <option value="Alta">Alta</option>
+          <option value="Media">Media</option>
+          <option value="Baja">Baja</option>
+        </select>
+
+        <label for="filtroResponsable">Responsable</label>
+        <input type="text" id="filtroResponsable" placeholder="Escribe un responsable..." />
+
+        <button class="btn-limpiar" id="limpiarFiltros">Limpiar</button>
+      </div>
+
+      <div class="tabla-container">
+        <table class="crm-table" id="tablaCRM">
+          <thead>
+            <tr>
+              <th><input type="checkbox" id="selectAll" class="checkbox-cliente" /></th>
+              <th><i class="fas fa-user"></i> Cliente</th>
+              <th><i class="fas fa-envelope"></i> Email</th>
+              <th><i class="fas fa-phone"></i> Teléfono</th>
+              <th><i class="fas fa-circle"></i> Estado</th>
+              <th><i class="fas fa-flag"></i> Prioridad</th>
+              <th><i class="fas fa-calendar"></i> Último contacto</th>
+              <th><i class="fas fa-user-tie"></i> Responsable</th>
+              <th><i class="fas fa-cog"></i> Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="tablaBody">
+            <!-- Las filas se generan con JavaScript (vacío) -->
+          </tbody>
+        </table>
+      </div>
+
+      <div class="table-actions">
+        <button class="btn-outline" id="addRowBtn"><i class="fas fa-plus-circle"></i> Añadir cliente</button>
+        <button class="btn-outline" id="removeRowBtn" style="border-color:#e5e7eb; color:#6b7280;"><i class="fas fa-trash-alt"></i> Eliminar cliente</button>
+      </div>
+    </div>
+
+    <!-- ===== SECCIÓN SEGUIMIENTO ===== -->
+    <div class="seccion" id="seccion-seguimiento">
+      <div class="titulo-tabla">Seguimiento de Clientes</div>
+
+      <!-- KPIs -->
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-label">Total seguimientos</div>
+          <div class="kpi-valor" id="totalSeguimientos">0</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Pendientes</div>
+          <div class="kpi-valor" id="seguimientosPendientes">0</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Completados</div>
+          <div class="kpi-valor" id="seguimientosCompletados">0</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Atrasados</div>
+          <div class="kpi-valor" id="seguimientosAtrasados">0</div>
+        </div>
+      </div>
+
+      <!-- Filtros Seguimiento -->
+      <div class="filtros-container">
+        <label for="filtroSegEstado">Estado</label>
+        <select id="filtroSegEstado">
+          <option value="todos">Todos</option>
+          <option value="Pendiente">Pendiente</option>
+          <option value="En progreso">En progreso</option>
+          <option value="Completado">Completado</option>
+          <option value="Atrasado">Atrasado</option>
+        </select>
+        <label for="filtroSegResponsable">Responsable</label>
+        <input type="text" id="filtroSegResponsable" placeholder="Responsable..." />
+        <button class="btn-limpiar" id="limpiarFiltrosSeg">Limpiar</button>
+        <button class="btn-outline" id="addSeguimientoBtn" style="margin-left:auto;"><i class="fas fa-plus-circle"></i> Nuevo seguimiento</button>
+      </div>
+
+      <!-- Lista de seguimientos -->
+      <div id="listaSeguimientos">
+        <!-- Se renderiza con JS (vacío) -->
+      </div>
+    </div>
+
+    <!-- ===== SECCIÓN REPORTES ===== -->
+    <div class="seccion" id="seccion-reportes">
+      <div class="titulo-tabla">Reportes y Analítica</div>
+
+      <!-- KPIs Reportes -->
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-label">Total clientes</div>
+          <div class="kpi-valor" id="reporteTotalClientes">0</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Activos</div>
+          <div class="kpi-valor" id="reporteActivos">0</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Inactivos</div>
+          <div class="kpi-valor" id="reporteInactivos">0</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Tasa conversión</div>
+          <div class="kpi-valor" id="reporteConversion">0%</div>
+        </div>
+      </div>
+
+      <!-- Filtros Reportes -->
+      <div class="filtros-container">
+        <label for="filtroReporteEstado">Estado</label>
+        <select id="filtroReporteEstado">
+          <option value="todos">Todos</option>
+          <option value="Activo">Activo</option>
+          <option value="En proceso">En proceso</option>
+          <option value="Inactivo">Inactivo</option>
+          <option value="Cerrado">Cerrado</option>
+        </select>
+        <label for="filtroReportePrioridad">Prioridad</label>
+        <select id="filtroReportePrioridad">
+          <option value="todas">Todas</option>
+          <option value="Alta">Alta</option>
+          <option value="Media">Media</option>
+          <option value="Baja">Baja</option>
+        </select>
+        <label for="filtroReporteResponsable">Responsable</label>
+        <input type="text" id="filtroReporteResponsable" placeholder="Responsable..." />
+        <button class="btn-limpiar" id="limpiarFiltrosReporte">Limpiar</button>
+      </div>
+
+      <!-- Gráficos -->
+      <div class="graficos-grid">
+        <div class="grafico-card">
+          <h4>Clientes por estado</h4>
+          <canvas id="chartEstado"></canvas>
+        </div>
+        <div class="grafico-card">
+          <h4>Seguimientos por mes</h4>
+          <canvas id="chartSeguimientos"></canvas>
+        </div>
+      </div>
+
+      <!-- Tabla rendimiento por responsable -->
+      <h4 style="font-size:0.9rem; font-weight:600; color:#6b7280; text-transform:uppercase; letter-spacing:0.04em; margin:1.5rem 0 0.5rem;">Rendimiento por responsable</h4>
+      <div class="tabla-container">
+        <table class="crm-table" id="tablaRendimiento">
+          <thead>
+            <tr>
+              <th>Responsable</th>
+              <th>Clientes asignados</th>
+              <th>Seguimientos completados</th>
+              <th>Seguimientos pendientes</th>
+              <th>Eficiencia</th>
+            </tr>
+          </thead>
+          <tbody id="tablaRendimientoBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ===== PDF ===== -->
+    <div class="pdf-actions">
+      <button class="btn-pdf" id="pdfBtn"><i class="fas fa-file-pdf"></i> Descargar PDF</button>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- ===== MODAL VER CLIENTE ===== -->
+<div class="modal-overlay" id="modalVer">
+  <div class="modal">
+    <div class="modal-header">
+      <h3><i class="fas fa-eye" style="color: #22c55e;"></i> Detalles del Cliente</h3>
+      <button class="btn-cerrar-modal" id="modalVerCerrar">&times;</button>
+    </div>
+    <div class="modal-body" id="modalVerBody"></div>
+    <div class="acciones-modal">
+      <button class="btn-cerrar" id="modalVerCerrarBtn">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL EDITAR CLIENTE ===== -->
+<div class="modal-overlay" id="modalEditar">
+  <div class="modal">
+    <div class="modal-header">
+      <h3><i class="fas fa-edit" style="color: #22c55e;"></i> Editar Cliente</h3>
+      <button class="btn-cerrar-modal" id="modalEditarCerrar">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="campo"><label>Nombre</label><input type="text" id="editNombre" /></div>
+      <div class="campo"><label>Email</label><input type="email" id="editEmail" /></div>
+      <div class="campo"><label>Teléfono</label><input type="text" id="editTelefono" /></div>
+      <div class="campo">
+        <label>Estado</label>
+        <select id="editEstado">
+          <option value="Activo">Activo</option>
+          <option value="En proceso">En proceso</option>
+          <option value="Inactivo">Inactivo</option>
+          <option value="Cerrado">Cerrado</option>
+        </select>
+      </div>
+      <div class="campo">
+        <label>Prioridad</label>
+        <select id="editPrioridad">
+          <option value="Alta">Alta</option>
+          <option value="Media">Media</option>
+          <option value="Baja">Baja</option>
+        </select>
+      </div>
+      <div class="campo"><label>Último contacto</label><input type="date" id="editUltimoContacto" /></div>
+      <div class="campo"><label>Responsable</label><input type="text" id="editResponsable" placeholder="Escribe el responsable..." /></div>
+      <div class="campo">
+        <div class="checkbox-group">
+          <input type="checkbox" id="editFijado" />
+          <label for="editFijado">Cliente fijado (mostrar pin)</label>
+        </div>
+      </div>
+    </div>
+    <div class="acciones-modal">
+      <button class="btn-cancelar" id="modalEditarCancelar">Cancelar</button>
+      <button class="btn-guardar" id="modalEditarGuardar">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL SEGUIMIENTO ===== -->
+<div class="modal-overlay" id="modalSeguimiento">
+  <div class="modal">
+    <div class="modal-header">
+      <h3><i class="fas fa-clock" style="color: #22c55e;"></i> <span id="modalSegTitulo">Nuevo Seguimiento</span></h3>
+      <button class="btn-cerrar-modal" id="modalSegCerrar">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="campo">
+        <label>Cliente</label>
+        <select id="segCliente"></select>
+      </div>
+      <div class="campo">
+        <label>Tipo de seguimiento</label>
+        <select id="segTipo">
+          <option value="Llamada">📞 Llamada</option>
+          <option value="Correo">✉️ Correo</option>
+          <option value="Reunión">🤝 Reunión</option>
+          <option value="Visita">🏢 Visita</option>
+        </select>
+      </div>
+      <div class="campo">
+        <label>Estado</label>
+        <select id="segEstado">
+          <option value="Pendiente">Pendiente</option>
+          <option value="En progreso">En progreso</option>
+          <option value="Completado">Completado</option>
+          <option value="Atrasado">Atrasado</option>
+        </select>
+      </div>
+      <div class="campo">
+        <label>Próximo contacto</label>
+        <input type="date" id="segFecha" />
+      </div>
+      <div class="campo">
+        <label>Responsable</label>
+        <input type="text" id="segResponsable" placeholder="Responsable..." />
+      </div>
+      <div class="campo">
+        <label>Notas</label>
+        <textarea id="segNotas" placeholder="Notas del seguimiento..."></textarea>
+      </div>
+    </div>
+    <div class="acciones-modal">
+      <button class="btn-cancelar" id="modalSegCancelar">Cancelar</button>
+      <button class="btn-guardar" id="modalSegGuardar">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL DETALLE SEGUIMIENTO ===== -->
+<div class="modal-overlay" id="modalDetalleSeg">
+  <div class="modal">
+    <div class="modal-header">
+      <h3><i class="fas fa-info-circle" style="color: #22c55e;"></i> Detalle del Seguimiento</h3>
+      <button class="btn-cerrar-modal" id="modalDetalleSegCerrar">&times;</button>
+    </div>
+    <div class="modal-body" id="modalDetalleSegBody"></div>
+    <div class="acciones-modal">
+      <button class="btn-cerrar" id="modalDetalleSegCerrarBtn">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  (function() {
+    "use strict";
+
+    // ==================== ELEMENTOS ====================
+    const tbody = document.getElementById('tablaBody');
+    const addBtn = document.getElementById('addRowBtn');
+    const removeBtn = document.getElementById('removeRowBtn');
+    const selectAll = document.getElementById('selectAll');
+    const buscador = document.getElementById('buscador');
+    const filtroBtn = document.getElementById('filtroBtn');
+    const filtroEstado = document.getElementById('filtroEstado');
+    const filtroPrioridad = document.getElementById('filtroPrioridad');
+    const filtroResponsable = document.getElementById('filtroResponsable');
+    const limpiarBtn = document.getElementById('limpiarFiltros');
+
+    const totalClientesEl = document.getElementById('totalClientes');
+    const totalActivosEl = document.getElementById('totalActivos');
+    const totalProcesoEl = document.getElementById('totalProceso');
+    const totalInactivosEl = document.getElementById('totalInactivos');
+    const totalCerradosEl = document.getElementById('totalCerrados');
+
+    // Seguimiento
+    const listaSeguimientos = document.getElementById('listaSeguimientos');
+    const totalSeguimientos = document.getElementById('totalSeguimientos');
+    const segPendientes = document.getElementById('seguimientosPendientes');
+    const segCompletados = document.getElementById('seguimientosCompletados');
+    const segAtrasados = document.getElementById('seguimientosAtrasados');
+    const filtroSegEstado = document.getElementById('filtroSegEstado');
+    const filtroSegResponsable = document.getElementById('filtroSegResponsable');
+    const limpiarFiltrosSeg = document.getElementById('limpiarFiltrosSeg');
+    const addSeguimientoBtn = document.getElementById('addSeguimientoBtn');
+
+    // Reportes
+    const reporteTotalClientes = document.getElementById('reporteTotalClientes');
+    const reporteActivos = document.getElementById('reporteActivos');
+    const reporteInactivos = document.getElementById('reporteInactivos');
+    const reporteConversion = document.getElementById('reporteConversion');
+    const filtroReporteEstado = document.getElementById('filtroReporteEstado');
+    const filtroReportePrioridad = document.getElementById('filtroReportePrioridad');
+    const filtroReporteResponsable = document.getElementById('filtroReporteResponsable');
+    const limpiarFiltrosReporte = document.getElementById('limpiarFiltrosReporte');
+    const tablaRendimientoBody = document.getElementById('tablaRendimientoBody');
+
+    // Modales
+    const modalVer = document.getElementById('modalVer');
+    const modalVerBody = document.getElementById('modalVerBody');
+    const modalVerCerrar = document.getElementById('modalVerCerrar');
+    const modalVerCerrarBtn = document.getElementById('modalVerCerrarBtn');
+
+    const modalEditar = document.getElementById('modalEditar');
+    const modalEditarCerrar = document.getElementById('modalEditarCerrar');
+    const modalEditarCancelar = document.getElementById('modalEditarCancelar');
+    const modalEditarGuardar = document.getElementById('modalEditarGuardar');
+
+    const modalSeg = document.getElementById('modalSeguimiento');
+    const modalSegCerrar = document.getElementById('modalSegCerrar');
+    const modalSegCancelar = document.getElementById('modalSegCancelar');
+    const modalSegGuardar = document.getElementById('modalSegGuardar');
+    const modalSegTitulo = document.getElementById('modalSegTitulo');
+    const segCliente = document.getElementById('segCliente');
+    const segTipo = document.getElementById('segTipo');
+    const segEstado = document.getElementById('segEstado');
+    const segFecha = document.getElementById('segFecha');
+    const segResponsable = document.getElementById('segResponsable');
+    const segNotas = document.getElementById('segNotas');
+
+    const modalDetalleSeg = document.getElementById('modalDetalleSeg');
+    const modalDetalleSegBody = document.getElementById('modalDetalleSegBody');
+    const modalDetalleSegCerrar = document.getElementById('modalDetalleSegCerrar');
+    const modalDetalleSegCerrarBtn = document.getElementById('modalDetalleSegCerrarBtn');
+
+    const editNombre = document.getElementById('editNombre');
+    const editEmail = document.getElementById('editEmail');
+    const editTelefono = document.getElementById('editTelefono');
+    const editEstado = document.getElementById('editEstado');
+    const editPrioridad = document.getElementById('editPrioridad');
+    const editUltimoContacto = document.getElementById('editUltimoContacto');
+    const editResponsable = document.getElementById('editResponsable');
+    const editFijado = document.getElementById('editFijado');
+
+    const tabs = document.querySelectorAll('.tabs span');
+    const secciones = {
+      clientes: document.getElementById('seccion-clientes'),
+      seguimiento: document.getElementById('seccion-seguimiento'),
+      reportes: document.getElementById('seccion-reportes')
+    };
+
+    const logoPlaceholder = document.getElementById('logoPlaceholder');
+    const logoInput = document.getElementById('logoUpload');
+    const logoImg = document.getElementById('logoImg');
+    const logoIcon = document.getElementById('logoIcon');
+    const logoTexto = document.querySelector('.logo-texto');
+
+    let filaEditando = null;
+    let editandoSegId = null;
+    let chartEstado = null;
+    let chartSeguimientos = null;
+
+    // ==================== DATOS CLIENTES (VACÍO) ====================
+    let clientes = [];
+
+    // ==================== DATOS SEGUIMIENTOS (VACÍO) ====================
+    let seguimientos = [];
+    let nextSegId = 1;
+
+    // ==================== MAPAS ====================
+    const estadoMap = {
+      'Activo': 'activo',
+      'En proceso': 'proceso',
+      'Inactivo': 'inactivo',
+      'Cerrado': 'cerrado'
+    };
+
+    const prioridadMap = {
+      'Alta': 'alta',
+      'Media': 'media',
+      'Baja': 'baja'
+    };
+
+    const segEstadoMap = {
+      'Pendiente': 'pendiente',
+      'En progreso': 'progreso',
+      'Completado': 'completado',
+      'Atrasado': 'atrasado'
+    };
+
+    // ==================== FUNCIONES UTILITARIAS ====================
+    function calcularIndicador(fecha) {
+      const hoy = new Date();
+      const fechaContacto = new Date(fecha);
+      const diffDias = Math.floor((hoy - fechaContacto) / (1000 * 60 * 60 * 24));
+      if (diffDias <= 3) return 'reciente';
+      if (diffDias <= 10) return 'medio';
+      return 'atrasado';
+    }
+
+    function getInitials(nombre) {
+      return nombre.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+    }
+
+    function formatearFecha(fecha) {
+      if (!fecha) return 'No registrado';
+      return new Date(fecha).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
+    }
+
+    function formatearFechaCorta(fecha) {
+      if (!fecha) return 'No registrado';
+      return new Date(fecha).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
+    }
+
+    // ==================== CLIENTES: ACTUALIZAR RESUMEN ====================
+    function actualizarResumen() {
+      const filas = tbody.querySelectorAll('tr');
+      let total = 0,
+        activos = 0,
+        proceso = 0,
+        inactivos = 0,
+        cerrados = 0;
+
+      filas.forEach(row => {
+        const estado = obtenerEstadoDesdeFila(row);
+        total++;
+        if (estado === 'Activo') activos++;
+        else if (estado === 'En proceso') proceso++;
+        else if (estado === 'Inactivo') inactivos++;
+        else if (estado === 'Cerrado') cerrados++;
+      });
+
+      totalClientesEl.textContent = total;
+      totalActivosEl.textContent = activos;
+      totalProcesoEl.textContent = proceso;
+      totalInactivosEl.textContent = inactivos;
+      totalCerradosEl.textContent = cerrados;
+    }
+
+    function obtenerEstadoDesdeFila(row) {
+      const select = row.querySelector('td:nth-child(5) select.estado-select');
+      return select ? select.value : 'Activo';
+    }
+
+    function obtenerPrioridadDesdeFila(row) {
+      const select = row.querySelector('td:nth-child(6) select.prioridad-select');
+      return select ? select.value : 'Media';
+    }
+
+    function obtenerResponsableDesdeFila(row) {
+      const span = row.querySelector('td:nth-child(8) .nombre-resp');
+      return span ? span.textContent : 'Sin asignar';
+    }
+
+    // ==================== CLIENTES: APLICAR FILTROS ====================
+    function aplicarFiltros() {
+      const estado = filtroEstado.value;
+      const prioridad = filtroPrioridad.value;
+      const responsable = filtroResponsable.value.toLowerCase().trim();
+      const busqueda = buscador.value.toLowerCase();
+      const filas = tbody.querySelectorAll('tr');
+
+      filas.forEach(row => {
+        const rowEstado = obtenerEstadoDesdeFila(row);
+        const rowPrioridad = obtenerPrioridadDesdeFila(row);
+        const rowResponsable = obtenerResponsableDesdeFila(row).toLowerCase();
+        const texto = row.textContent.toLowerCase();
+        let mostrar = true;
+
+        if (estado !== 'todos' && rowEstado !== estado) mostrar = false;
+        if (prioridad !== 'todas' && rowPrioridad !== prioridad) mostrar = false;
+        if (responsable && !rowResponsable.includes(responsable)) mostrar = false;
+        if (busqueda && !texto.includes(busqueda)) mostrar = false;
+
+        row.style.display = mostrar ? '' : 'none';
+      });
+
+      actualizarResumen();
+    }
+
+    // ==================== CLIENTES: RENDERIZAR FILAS ====================
+    function renderizarFilas() {
+      tbody.innerHTML = '';
+      clientes.forEach((cliente, index) => {
+        const tr = crearFilaCliente(cliente, index);
+        tbody.appendChild(tr);
+      });
+      aplicarFiltros();
+    }
+
+    function crearFilaCliente(cliente, index) {
+      const tr = document.createElement('tr');
+      tr.dataset.index = index;
+
+      const checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.className = 'checkbox-cliente';
+
+      const selectEstado = document.createElement('select');
+      selectEstado.className = 'estado-select';
+      const estados = ['Activo', 'En proceso', 'Inactivo', 'Cerrado'];
+      estados.forEach(e => {
+        const opt = document.createElement('option');
+        opt.value = e;
+        opt.textContent = e;
+        if (e === cliente.estado) opt.selected = true;
+        selectEstado.appendChild(opt);
+      });
+
+      const badgeEstado = document.createElement('span');
+      badgeEstado.className = `badge badge-estado ${estadoMap[cliente.estado] || 'activo'}`;
+      badgeEstado.textContent = cliente.estado;
+
+      const selectPrioridad = document.createElement('select');
+      selectPrioridad.className = 'prioridad-select';
+      const prioridades = ['Alta', 'Media', 'Baja'];
+      prioridades.forEach(p => {
+        const opt = document.createElement('option');
+        opt.value = p;
+        opt.textContent = p;
+        if (p === cliente.prioridad) opt.selected = true;
+        selectPrioridad.appendChild(opt);
+      });
+
+      const badgePrioridad = document.createElement('span');
+      badgePrioridad.className = `badge badge-prioridad ${prioridadMap[cliente.prioridad] || 'media'}`;
+      badgePrioridad.textContent = cliente.prioridad;
+
+      const avatar = document.createElement('span');
+      avatar.className = 'avatar';
+      avatar.textContent = cliente.responsable ? getInitials(cliente.responsable) : '?';
+      const nombreResp = document.createElement('span');
+      nombreResp.className = 'nombre-resp';
+      nombreResp.textContent = cliente.responsable || 'Sin asignar';
+
+      const indicador = calcularIndicador(cliente.ultimoContacto || new Date().toISOString().split('T')[0]);
+      const fechaDisplay = cliente.ultimoContacto ? new Date(cliente.ultimoContacto).toLocaleDateString('es-ES') : 'No registrado';
+
+      tr.innerHTML = `
+        <td></td>
+        <td>
+          <div class="cliente-info">
+            <span class="nombre">
+              ${cliente.nombre}
+              ${cliente.fijado ? '<span class="pin-icon"><i class="fas fa-thumbtack"></i></span>' : ''}
+            </span>
+          </div>
+        </td>
+        <td>${cliente.email}</td>
+        <td>${cliente.telefono}</td>
+        <td></td>
+        <td></td>
+        <td>
+          <span class="contacto-indicador">
+            <span class="indicador ${indicador}"></span>
+            ${fechaDisplay}
+          </span>
+        </td>
+        <td>
+          <div class="responsable-info">
+            <span class="avatar">${cliente.responsable ? getInitials(cliente.responsable) : '?'}</span>
+            <span class="nombre-resp">${cliente.responsable || 'Sin asignar'}</span>
+          </div>
+        </td>
+        <td>
+          <div class="acciones">
+            <button class="btn-accion ver" data-index="${index}" title="Ver"><i class="fas fa-eye"></i></button>
+            <button class="btn-accion editar" data-index="${index}" title="Editar"><i class="fas fa-edit"></i></button>
+            <button class="btn-accion eliminar" data-index="${index}" title="Eliminar"><i class="fas fa-trash-alt"></i></button>
+          </div>
+        </td>
+      `;
+
+      const celdaCheckbox = tr.querySelector('td:nth-child(1)');
+      celdaCheckbox.appendChild(checkbox);
+
+      const celdaEstado = tr.querySelector('td:nth-child(5)');
+      celdaEstado.appendChild(badgeEstado);
+      celdaEstado.appendChild(selectEstado);
+
+      const celdaPrioridad = tr.querySelector('td:nth-child(6)');
+      celdaPrioridad.appendChild(badgePrioridad);
+      celdaPrioridad.appendChild(selectPrioridad);
+
+      selectEstado.addEventListener('change', function() {
+        const val = this.value;
+        cliente.estado = val;
+        badgeEstado.className = `badge badge-estado ${estadoMap[val] || 'activo'}`;
+        badgeEstado.textContent = val;
+        actualizarResumen();
+        aplicarFiltros();
+        actualizarReportes();
+      });
+
+      selectPrioridad.addEventListener('change', function() {
+        const val = this.value;
+        cliente.prioridad = val;
+        badgePrioridad.className = `badge badge-prioridad ${prioridadMap[val] || 'media'}`;
+        badgePrioridad.textContent = val;
+        aplicarFiltros();
+        actualizarReportes();
+      });
+
+      const acciones = tr.querySelectorAll('.btn-accion');
+      acciones.forEach(btn => {
+        btn.addEventListener('click', function(e) {
+          e.stopPropagation();
+          const idx = parseInt(this.dataset.index);
+          if (this.classList.contains('eliminar')) {
+            if (confirm('¿Eliminar este cliente?')) {
+              clientes.splice(idx, 1);
+              renderizarFilas();
+              actualizarReportes();
+            }
+          } else if (this.classList.contains('editar')) {
+            abrirModalEditar(idx);
+          } else if (this.classList.contains('ver')) {
+            abrirModalVer(idx);
+          }
+        });
+      });
+
+      return tr;
+    }
+
+    // ==================== CLIENTES: MODALES ====================
+    function abrirModalVer(index) {
+      const cliente = clientes[index];
+      modalVerBody.innerHTML = `
+        <div class="campo"><label>Nombre</label><div class="valor"><strong>${cliente.nombre}</strong></div></div>
+        <div class="campo"><label>Email</label><div class="valor">${cliente.email}</div></div>
+        <div class="campo"><label>Teléfono</label><div class="valor">${cliente.telefono}</div></div>
+        <div class="campo"><label>Estado</label><div class="valor"><span class="badge badge-estado ${estadoMap[cliente.estado] || 'activo'}">${cliente.estado}</span></div></div>
+        <div class="campo"><label>Prioridad</label><div class="valor"><span class="badge badge-prioridad ${prioridadMap[cliente.prioridad] || 'media'}">${cliente.prioridad}</span></div></div>
+        <div class="campo"><label>Último contacto</label><div class="valor">${formatearFecha(cliente.ultimoContacto)}</div></div>
+        <div class="campo"><label>Responsable</label><div class="valor">${cliente.responsable || 'Sin asignar'}</div></div>
+        <div class="campo"><label>Fijado</label><div class="valor">${cliente.fijado ? '✅ Sí' : '❌ No'}</div></div>
+      `;
+      modalVer.classList.add('activo');
+    }
+
+    function cerrarModalVer() {
+      modalVer.classList.remove('activo');
+    }
+    modalVerCerrar.addEventListener('click', cerrarModalVer);
+    modalVerCerrarBtn.addEventListener('click', cerrarModalVer);
+    modalVer.addEventListener('click', function(e) { if (e.target === this) cerrarModalVer(); });
+
+    function abrirModalEditar(index) {
+      filaEditando = index;
+      const cliente = clientes[index];
+      editNombre.value = cliente.nombre;
+      editEmail.value = cliente.email;
+      editTelefono.value = cliente.telefono;
+      editEstado.value = cliente.estado;
+      editPrioridad.value = cliente.prioridad;
+      editUltimoContacto.value = cliente.ultimoContacto || '';
+      editResponsable.value = cliente.responsable || '';
+      editFijado.checked = cliente.fijado || false;
+      modalEditar.classList.add('activo');
+    }
+
+    function cerrarModalEditar() {
+      modalEditar.classList.remove('activo');
+      filaEditando = null;
+    }
+    modalEditarCerrar.addEventListener('click', cerrarModalEditar);
+    modalEditarCancelar.addEventListener('click', cerrarModalEditar);
+    modalEditar.addEventListener('click', function(e) { if (e.target === this) cerrarModalEditar(); });
+
+    modalEditarGuardar.addEventListener('click', function() {
+      if (filaEditando === null) return;
+      const cliente = clientes[filaEditando];
+      cliente.nombre = editNombre.value.trim() || cliente.nombre;
+      cliente.email = editEmail.value.trim() || cliente.email;
+      cliente.telefono = editTelefono.value.trim() || cliente.telefono;
+      cliente.estado = editEstado.value;
+      cliente.prioridad = editPrioridad.value;
+      cliente.ultimoContacto = editUltimoContacto.value || cliente.ultimoContacto;
+      cliente.responsable = editResponsable.value.trim() || cliente.responsable;
+      cliente.fijado = editFijado.checked;
+      cerrarModalEditar();
+      renderizarFilas();
+      actualizarReportes();
+    });
+
+    // ==================== SEGUIMIENTO: RENDERIZAR ====================
+    function renderizarSeguimientos() {
+      const estadoFiltro = filtroSegEstado.value;
+      const responsableFiltro = filtroSegResponsable.value.toLowerCase().trim();
+
+      let filtrados = seguimientos.filter(s => {
+        let ok = true;
+        if (estadoFiltro !== 'todos' && s.estado !== estadoFiltro) ok = false;
+        if (responsableFiltro && !s.responsable.toLowerCase().includes(responsableFiltro)) ok = false;
+        return ok;
+      });
+
+      // Actualizar KPIs
+      const total = seguimientos.length;
+      const pendientes = seguimientos.filter(s => s.estado === 'Pendiente').length;
+      const completados = seguimientos.filter(s => s.estado === 'Completado').length;
+      const atrasados = seguimientos.filter(s => s.estado === 'Atrasado').length;
+
+      totalSeguimientos.textContent = total;
+      segPendientes.textContent = pendientes;
+      segCompletados.textContent = completados;
+      segAtrasados.textContent = atrasados;
+
+      // Renderizar lista
+      listaSeguimientos.innerHTML = '';
+      if (filtrados.length === 0) {
+        listaSeguimientos.innerHTML = '<p style="color: #6b7280; text-align: center; padding: 2rem;">No hay seguimientos que coincidan con los filtros.</p>';
+        return;
+      }
+
+      filtrados.forEach(seg => {
+        const card = document.createElement('div');
+        card.className = 'seguimiento-card';
+        const estadoClass = segEstadoMap[seg.estado] || 'pendiente';
+        card.innerHTML = `
+          <div class="info">
+            <span class="cliente">${seg.cliente}</span>
+            <span class="detalle"><strong>Tipo:</strong> ${seg.tipo}</span>
+            <span class="badge badge-seguimiento ${estadoClass}">${seg.estado}</span>
+            <span class="detalle">📅 ${formatearFechaCorta(seg.fecha)}</span>
+            <span class="detalle">👤 ${seg.responsable}</span>
+          </div>
+          <div class="acciones-seguimiento">
+            <button class="btn-accion ver" data-id="${seg.id}" title="Ver detalle"><i class="fas fa-eye"></i></button>
+            <button class="btn-accion editar" data-id="${seg.id}" title="Editar"><i class="fas fa-edit"></i></button>
+            <button class="btn-accion" data-id="${seg.id}" title="Completar" style="color:#22c55e;" id="completarSeg-${seg.id}"><i class="fas fa-check-circle"></i></button>
+            <button class="btn-accion eliminar" data-id="${seg.id}" title="Eliminar"><i class="fas fa-trash-alt"></i></button>
+          </div>
+        `;
+
+        // Eventos
+        card.querySelector('.ver').addEventListener('click', () => abrirDetalleSeg(seg.id));
+        card.querySelector('.editar').addEventListener('click', () => abrirEditarSeg(seg.id));
+        card.querySelector('.eliminar').addEventListener('click', () => {
+          if (confirm('¿Eliminar este seguimiento?')) {
+            seguimientos = seguimientos.filter(s => s.id !== seg.id);
+            renderizarSeguimientos();
+            actualizarReportes();
+          }
+        });
+        card.querySelector(`#completarSeg-${seg.id}`).addEventListener('click', () => {
+          const s = seguimientos.find(s => s.id === seg.id);
+          if (s) {
+            s.estado = 'Completado';
+            renderizarSeguimientos();
+            actualizarReportes();
+          }
+        });
+
+        listaSeguimientos.appendChild(card);
+      });
+    }
+
+    // ==================== SEGUIMIENTO: MODALES ====================
+    function abrirNuevoSeg() {
+      editandoSegId = null;
+      modalSegTitulo.textContent = 'Nuevo Seguimiento';
+      segCliente.innerHTML = '';
+      clientes.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c.nombre;
+        opt.textContent = c.nombre;
+        segCliente.appendChild(opt);
+      });
+      segTipo.value = 'Llamada';
+      segEstado.value = 'Pendiente';
+      segFecha.value = new Date().toISOString().split('T')[0];
+      segResponsable.value = '';
+      segNotas.value = '';
+      modalSeg.classList.add('activo');
+    }
+
+    function abrirEditarSeg(id) {
+      const seg = seguimientos.find(s => s.id === id);
+      if (!seg) return;
+      editandoSegId = id;
+      modalSegTitulo.textContent = 'Editar Seguimiento';
+      segCliente.innerHTML = '';
+      clientes.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c.nombre;
+        opt.textContent = c.nombre;
+        if (c.nombre === seg.cliente) opt.selected = true;
+        segCliente.appendChild(opt);
+      });
+      segTipo.value = seg.tipo;
+      segEstado.value = seg.estado;
+      segFecha.value = seg.fecha;
+      segResponsable.value = seg.responsable || '';
+      segNotas.value = seg.notas || '';
+      modalSeg.classList.add('activo');
+    }
+
+    function cerrarModalSeg() {
+      modalSeg.classList.remove('activo');
+      editandoSegId = null;
+    }
+
+    modalSegCerrar.addEventListener('click', cerrarModalSeg);
+    modalSegCancelar.addEventListener('click', cerrarModalSeg);
+    modalSeg.addEventListener('click', function(e) { if (e.target === this) cerrarModalSeg(); });
+
+    modalSegGuardar.addEventListener('click', function() {
+      const cliente = segCliente.value;
+      const tipo = segTipo.value;
+      const estado = segEstado.value;
+      const fecha = segFecha.value;
+      const responsable = segResponsable.value.trim() || 'Sin asignar';
+      const notas = segNotas.value.trim();
+
+      if (!cliente) { alert('Selecciona un cliente.'); return; }
+      if (!fecha) { alert('Selecciona una fecha.'); return; }
+
+      if (editandoSegId !== null) {
+        const seg = seguimientos.find(s => s.id === editandoSegId);
+        if (seg) {
+          seg.cliente = cliente;
+          seg.tipo = tipo;
+          seg.estado = estado;
+          seg.fecha = fecha;
+          seg.responsable = responsable;
+          seg.notas = notas;
+        }
+      } else {
+        seguimientos.push({
+          id: nextSegId++,
+          cliente: cliente,
+          tipo: tipo,
+          estado: estado,
+          fecha: fecha,
+          responsable: responsable,
+          notas: notas
+        });
+      }
+
+      cerrarModalSeg();
+      renderizarSeguimientos();
+      actualizarReportes();
+    });
+
+    addSeguimientoBtn.addEventListener('click', abrirNuevoSeg);
+
+    // ==================== SEGUIMIENTO: DETALLE ====================
+    function abrirDetalleSeg(id) {
+      const seg = seguimientos.find(s => s.id === id);
+      if (!seg) return;
+      modalDetalleSegBody.innerHTML = `
+        <div class="campo"><label>Cliente</label><div class="valor"><strong>${seg.cliente}</strong></div></div>
+        <div class="campo"><label>Tipo</label><div class="valor">${seg.tipo}</div></div>
+        <div class="campo"><label>Estado</label><div class="valor"><span class="badge badge-seguimiento ${segEstadoMap[seg.estado] || 'pendiente'}">${seg.estado}</span></div></div>
+        <div class="campo"><label>Próximo contacto</label><div class="valor">${formatearFecha(seg.fecha)}</div></div>
+        <div class="campo"><label>Responsable</label><div class="valor">${seg.responsable}</div></div>
+        <div class="campo"><label>Notas</label><div class="valor">${seg.notas || 'Sin notas'}</div></div>
+      `;
+      modalDetalleSeg.classList.add('activo');
+    }
+
+    function cerrarDetalleSeg() {
+      modalDetalleSeg.classList.remove('activo');
+    }
+    modalDetalleSegCerrar.addEventListener('click', cerrarDetalleSeg);
+    modalDetalleSegCerrarBtn.addEventListener('click', cerrarDetalleSeg);
+    modalDetalleSeg.addEventListener('click', function(e) { if (e.target === this) cerrarDetalleSeg(); });
+
+    // ==================== FILTROS SEGUIMIENTO ====================
+    filtroSegEstado.addEventListener('change', renderizarSeguimientos);
+    filtroSegResponsable.addEventListener('input', renderizarSeguimientos);
+    limpiarFiltrosSeg.addEventListener('click', function() {
+      filtroSegEstado.value = 'todos';
+      filtroSegResponsable.value = '';
+      renderizarSeguimientos();
+    });
+
+    // ==================== REPORTES ====================
+    function actualizarReportes() {
+      const total = clientes.length;
+      const activos = clientes.filter(c => c.estado === 'Activo').length;
+      const inactivos = clientes.filter(c => c.estado === 'Inactivo').length;
+      const completados = seguimientos.filter(s => s.estado === 'Completado').length;
+      const conversion = total > 0 ? Math.round((completados / seguimientos.length) * 100) : 0;
+
+      reporteTotalClientes.textContent = total;
+      reporteActivos.textContent = activos;
+      reporteInactivos.textContent = inactivos;
+      reporteConversion.textContent = conversion + '%';
+
+      // Tabla rendimiento por responsable
+      const responsables = {};
+      clientes.forEach(c => {
+        const resp = c.responsable || 'Sin asignar';
+        if (!responsables[resp]) responsables[resp] = { clientes: 0, completados: 0, pendientes: 0 };
+        responsables[resp].clientes++;
+      });
+      seguimientos.forEach(s => {
+        const resp = s.responsable || 'Sin asignar';
+        if (!responsables[resp]) responsables[resp] = { clientes: 0, completados: 0, pendientes: 0 };
+        if (s.estado === 'Completado') responsables[resp].completados++;
+        if (s.estado === 'Pendiente' || s.estado === 'Atrasado') responsables[resp].pendientes++;
+      });
+
+      tablaRendimientoBody.innerHTML = '';
+      Object.keys(responsables).forEach(resp => {
+        const data = responsables[resp];
+        const totalSeg = data.completados + data.pendientes;
+        const eficiencia = totalSeg > 0 ? Math.round((data.completados / totalSeg) * 100) : 0;
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><strong>${resp}</strong></td>
+          <td>${data.clientes}</td>
+          <td>${data.completados}</td>
+          <td>${data.pendientes}</td>
+          <td>${eficiencia}%</td>
+        `;
+        tablaRendimientoBody.appendChild(tr);
+      });
+
+      // Gráficos
+      const ctxEstado = document.getElementById('chartEstado').getContext('2d');
+      const ctxSeg = document.getElementById('chartSeguimientos').getContext('2d');
+
+      const estados = ['Activo', 'En proceso', 'Inactivo', 'Cerrado'];
+      const counts = estados.map(e => clientes.filter(c => c.estado === e).length);
+      const colores = ['#86efac', '#fde68a', '#fca5a5', '#e5e7eb'];
+
+      if (chartEstado) chartEstado.destroy();
+      chartEstado = new Chart(ctxEstado, {
+        type: 'doughnut',
+        data: {
+          labels: estados,
+          datasets: [{ data: counts, backgroundColor: colores, borderWidth: 0 }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: true,
+          plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, padding: 8, font: { size: 10 } } } },
+          cutout: '70%'
+        }
+      });
+
+      // Seguimientos por mes (simulado)
+      const meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul'];
+      const segCounts = meses.map((m, i) => {
+        return seguimientos.filter(s => {
+          if (!s.fecha) return false;
+          const mesSeg = new Date(s.fecha).getMonth();
+          return mesSeg === i;
+        }).length;
+      });
+
+      if (chartSeguimientos) chartSeguimientos.destroy();
+      chartSeguimientos = new Chart(ctxSeg, {
+        type: 'bar',
+        data: {
+          labels: meses,
+          datasets: [{ label: 'Seguimientos', data: segCounts, backgroundColor: '#22c55e', borderRadius: 4 }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: true,
+          plugins: { legend: { display: false } },
+          scales: { y: { beginAtZero: true, grid: { color: '#e5e7eb' } }, x: { grid: { display: false } } }
+        }
+      });
+    }
+
+    // ==================== NAVEGACIÓN SPA ====================
+    tabs.forEach(tab => {
+      tab.addEventListener('click', function() {
+        tabs.forEach(t => t.classList.remove('active'));
+        this.classList.add('active');
+
+        const seccionId = this.dataset.seccion;
+        Object.keys(secciones).forEach(key => {
+          secciones[key].classList.toggle('activa', key === seccionId);
+        });
+
+        if (seccionId === 'seguimiento') renderizarSeguimientos();
+        if (seccionId === 'reportes') actualizarReportes();
+      });
+    });
+
+    // ==================== CLIENTES: BOTONES ====================
+    addBtn.addEventListener('click', function() {
+      const hoy = new Date().toISOString().split('T')[0];
+      clientes.push({
+        nombre: 'Nuevo Cliente',
+        email: 'cliente@email.com',
+        telefono: '+56 9 0000 0000',
+        estado: 'Activo',
+        prioridad: 'Media',
+        ultimoContacto: hoy,
+        responsable: 'Sin asignar',
+        fijado: false
+      });
+      renderizarFilas();
+      actualizarReportes();
+    });
+
+    removeBtn.addEventListener('click', function() {
+      const checkboxes = tbody.querySelectorAll('.checkbox-cliente:checked');
+      if (checkboxes.length === 0) {
+        alert('Selecciona al menos un cliente.');
+        return;
+      }
+      if (confirm('¿Eliminar los clientes seleccionados?')) {
+        const indices = [];
+        checkboxes.forEach(cb => {
+          const row = cb.closest('tr');
+          if (row && row.dataset.index !== undefined) {
+            indices.push(parseInt(row.dataset.index));
+          }
+        });
+        indices.sort((a, b) => b - a);
+        indices.forEach(i => clientes.splice(i, 1));
+        renderizarFilas();
+        actualizarReportes();
+      }
+    });
+
+    // ==================== CLIENTES: FILTROS ====================
+    filtroEstado.addEventListener('change', aplicarFiltros);
+    filtroPrioridad.addEventListener('change', aplicarFiltros);
+    filtroResponsable.addEventListener('input', aplicarFiltros);
+    buscador.addEventListener('input', aplicarFiltros);
+
+    limpiarBtn.addEventListener('click', function() {
+      filtroEstado.value = 'todos';
+      filtroPrioridad.value = 'todas';
+      filtroResponsable.value = '';
+      buscador.value = '';
+      aplicarFiltros();
+    });
+
+    filtroBtn.addEventListener('click', function() {
+      aplicarFiltros();
+    });
+
+    // ==================== REPORTES: FILTROS ====================
+    filtroReporteEstado.addEventListener('change', actualizarReportes);
+    filtroReportePrioridad.addEventListener('change', actualizarReportes);
+    filtroReporteResponsable.addEventListener('input', actualizarReportes);
+    limpiarFiltrosReporte.addEventListener('click', function() {
+      filtroReporteEstado.value = 'todos';
+      filtroReportePrioridad.value = 'todas';
+      filtroReporteResponsable.value = '';
+      actualizarReportes();
+    });
+
+    // ==================== SELECT ALL ====================
+    selectAll.addEventListener('change', function() {
+      const checkboxes = tbody.querySelectorAll('.checkbox-cliente');
+      checkboxes.forEach(cb => cb.checked = this.checked);
+    });
+
+    // ==================== LOGO ====================
+    logoPlaceholder.addEventListener('click', function() { logoInput.click(); });
+    logoInput.addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(ev) {
+          logoImg.src = ev.target.result;
+          logoImg.style.display = 'block';
+          logoIcon.style.display = 'none';
+          if (logoTexto) logoTexto.style.display = 'none';
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    // ==================== INICIALIZAR ====================
+    renderizarFilas();
+    renderizarSeguimientos();
+    actualizarReportes();
+
+    // ==================== PDF ====================
+    document.getElementById('pdfBtn').addEventListener('click', function() {
+      if (typeof html2canvas === 'undefined' || typeof jsPDF === 'undefined') {
+        const s1 = document.createElement('script');
+        s1.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+        s1.onload = function() {
+          const s2 = document.createElement('script');
+          s2.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+          s2.onload = function() { generarPDF(); };
+          document.head.appendChild(s2);
+        };
+        document.head.appendChild(s1);
+      } else {
+        generarPDF();
+      }
+    });
+
+    function generarPDF() {
+      const wrapper = document.getElementById('crmApp');
+
+      const acciones = wrapper.querySelector('.table-actions');
+      const pdfBtn = wrapper.querySelector('.pdf-actions');
+      const addBtnOrig = wrapper.querySelector('#addRowBtn');
+      const removeBtnOrig = wrapper.querySelector('#removeRowBtn');
+      const searchFiltro = wrapper.querySelector('.search-filtro');
+
+      const accDisplay = acciones ? acciones.style.display : '';
+      const pdfDisplay = pdfBtn ? pdfBtn.style.display : '';
+      const searchDisplay = searchFiltro ? searchFiltro.style.display : '';
+
+      if (acciones) acciones.style.display = 'none';
+      if (pdfBtn) pdfBtn.style.display = 'none';
+      if (addBtnOrig) addBtnOrig.style.display = 'none';
+      if (removeBtnOrig) removeBtnOrig.style.display = 'none';
+      if (searchFiltro) searchFiltro.style.display = 'none';
+
+      const logoIconEl = wrapper.querySelector('#logoIcon');
+      const logoTextEl = wrapper.querySelector('.logo-texto');
+      if (logoIconEl) logoIconEl.style.display = 'none';
+      if (logoTextEl) logoTextEl.style.display = 'none';
+
+      const wrapperWidth = wrapper.scrollWidth;
+      const wrapperHeight = wrapper.scrollHeight;
+
+      html2canvas(wrapper, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff',
+        logging: false,
+        width: wrapperWidth,
+        height: wrapperHeight,
+        windowWidth: wrapperWidth,
+        windowHeight: wrapperHeight,
+        onclone: function(doc) {
+          const titulo = doc.querySelector('.titulo-tabla');
+          if (titulo) titulo.style.color = '#111827';
+          const ths = doc.querySelectorAll('table.crm-table thead th');
+          ths.forEach(th => {
+            th.style.background = '#f8fafc';
+            th.style.color = '#6b7280';
+          });
+        }
+      }).then(function(canvas) {
+        if (acciones) acciones.style.display = accDisplay || '';
+        if (pdfBtn) pdfBtn.style.display = pdfDisplay || '';
+        if (addBtnOrig) addBtnOrig.style.display = '';
+        if (removeBtnOrig) removeBtnOrig.style.display = '';
+        if (searchFiltro) searchFiltro.style.display = searchDisplay || '';
+        if (logoIconEl) logoIconEl.style.display = '';
+        if (logoTextEl) logoTextEl.style.display = '';
+
+        const { jsPDF } = window.jspdf;
+        const imgWidth = canvas.width;
+        const imgHeight = canvas.height;
+        const pxToMm = 0.264583;
+        const pdfWidth = imgWidth * pxToMm;
+        const pdfHeight = imgHeight * pxToMm;
+
+        const pdf = new jsPDF({
+          orientation: pdfWidth > pdfHeight ? 'l' : 'p',
+          unit: 'mm',
+          format: [pdfWidth, pdfHeight]
+        });
+
+        pdf.addImage(canvas, 'PNG', 0, 0, pdfWidth, pdfHeight);
+        pdf.save('seguimiento-clientes.pdf');
+
+      }).catch(function(err) {
+        console.error(err);
+        alert('Error al generar PDF: ' + err.message);
+        if (acciones) acciones.style.display = accDisplay || '';
+        if (pdfBtn) pdfBtn.style.display = pdfDisplay || '';
+        if (addBtnOrig) addBtnOrig.style.display = '';
+        if (removeBtnOrig) removeBtnOrig.style.display = '';
+        if (searchFiltro) searchFiltro.style.display = searchDisplay || '';
+        if (logoIconEl) logoIconEl.style.display = '';
+        if (logoTextEl) logoTextEl.style.display = '';
+      });
+    }
+
+  })();
+</script>
+
+</body>
+</html>
