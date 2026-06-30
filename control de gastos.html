@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Control de gastos</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+  <style>
+    /* ===== ESTILOS COMPLETOS ===== */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #f4f6f8;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 2rem 1rem;
+      color: #1a1a2e;
+    }
+
+    .gastos-wrapper {
+      max-width: 1300px;
+      width: 100%;
+      background: #ffffff;
+      border-radius: 24px;
+      box-shadow: 0 20px 40px -12px rgba(26, 26, 46, 0.08);
+      padding: 2rem 2.5rem;
+      border: 1px solid #e9ecef;
+    }
+
+    .header-gastos {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 2px solid #e9ecef;
+      padding-bottom: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .logo-area {
+      display: flex;
+      align-items: center;
+      gap: 1.2rem;
+    }
+
+    .logo-placeholder {
+      width: 70px;
+      height: 70px;
+      border-radius: 12px;
+      background: #f8f9fa;
+      border: 2px dashed #dde1e6;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: 0.2s;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    .logo-placeholder:hover {
+      border-color: #2c3e50;
+      background: #f1f3f5;
+    }
+    .logo-placeholder img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: none;
+    }
+    .logo-placeholder i {
+      font-size: 1.6rem;
+      color: #7a8a9a;
+      opacity: 0.5;
+    }
+    .logo-placeholder .logo-texto {
+      font-size: 0.5rem;
+      color: #7a8a9a;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      margin-top: 2px;
+    }
+    .logo-upload-input {
+      display: none;
+    }
+
+    .titulo-fecha {
+      text-align: right;
+    }
+    .titulo-fecha .titulo {
+      font-size: 2.2rem;
+      font-weight: 700;
+      color: #2c3e50;
+      letter-spacing: -0.02em;
+    }
+    .titulo-fecha .fecha-edit {
+      display: inline-block;
+      margin-top: 0.2rem;
+      font-size: 0.9rem;
+      color: #5a6a7a;
+    }
+    .titulo-fecha .fecha-edit input {
+      border: none;
+      border-bottom: 2px solid #e9ecef;
+      background: transparent;
+      padding: 0.2rem 0.4rem;
+      font-size: 0.9rem;
+      color: #2c3e50;
+      outline: none;
+      font-family: inherit;
+      width: 140px;
+    }
+    .titulo-fecha .fecha-edit input:focus {
+      border-bottom-color: #2c3e50;
+    }
+
+    .resumen-filtros {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      background: #f8f9fa;
+      padding: 1rem 1.5rem;
+      border-radius: 12px;
+      margin-bottom: 1.5rem;
+      border: 1px solid #e9ecef;
+      gap: 1rem;
+    }
+
+    .resumen-totales {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.5rem 2.5rem;
+    }
+
+    .resumen-item {
+      display: flex;
+      align-items: baseline;
+      gap: 0.3rem;
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: #2c3e50;
+    }
+    .resumen-item .label {
+      font-weight: 400;
+      color: #5a6a7a;
+    }
+    .resumen-item .valor {
+      font-weight: 700;
+      color: #1a1a2e;
+    }
+    .resumen-item .valor.personal {
+      color: #3b82f6;
+    }
+    .resumen-item .valor.empresarial {
+      color: #10b981;
+    }
+
+    .filtros {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.8rem 1.2rem;
+    }
+
+    .filtros label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: #5a6a7a;
+    }
+
+    .filtros select,
+    .filtros input[type="text"] {
+      padding: 0.25rem 0.8rem 0.25rem 0.5rem;
+      border: 2px solid #e9ecef;
+      border-radius: 6px;
+      background: #ffffff;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: #2c3e50;
+      outline: none;
+      font-family: inherit;
+      cursor: pointer;
+      appearance: auto;
+      min-width: 110px;
+    }
+    .filtros select:focus,
+    .filtros input[type="text"]:focus {
+      border-color: #2c3e50;
+      box-shadow: 0 0 0 3px rgba(44, 62, 80, 0.06);
+    }
+
+    .filtros .btn-limpiar {
+      background: transparent;
+      border: 1.5px solid #dde1e6;
+      color: #5a6a7a;
+      padding: 0.2rem 0.8rem;
+      border-radius: 30px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.15s;
+    }
+    .filtros .btn-limpiar:hover {
+      border-color: #2c3e50;
+      color: #2c3e50;
+    }
+
+    .tabla-container {
+      overflow-x: auto;
+      margin-top: 0.8rem;
+      margin-bottom: 1.5rem;
+    }
+
+    table.gastos-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+      min-width: 900px;
+    }
+    table.gastos-table thead th {
+      background: #2c3e50;
+      color: #ffffff;
+      padding: 0.7rem 0.5rem;
+      text-align: left;
+      font-weight: 600;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    table.gastos-table thead th:last-child {
+      text-align: right;
+      padding-right: 1rem;
+    }
+    table.gastos-table thead th:nth-child(7) {
+      text-align: right;
+      padding-right: 0.8rem;
+    }
+
+    table.gastos-table tbody td {
+      padding: 0.5rem 0.5rem;
+      border-bottom: 1px solid #e9ecef;
+      vertical-align: middle;
+      color: #2c3e50;
+    }
+    table.gastos-table tbody td:last-child {
+      text-align: right;
+      padding-right: 1rem;
+    }
+    table.gastos-table tbody td:nth-child(7) {
+      text-align: right;
+      padding-right: 0.8rem;
+    }
+
+    table.gastos-table tbody tr:nth-child(even) {
+      background: #f8f9fa;
+    }
+
+    table.gastos-table tbody tr.filtrado {
+      display: none;
+    }
+
+    table.gastos-table .display-text {
+      background: transparent;
+      border: none;
+      outline: none;
+      font-size: 0.9rem;
+      color: #2c3e50;
+      font-family: inherit;
+      width: 100%;
+      padding: 0.1rem 0.2rem;
+      text-align: inherit;
+    }
+    table.gastos-table .display-text:focus {
+      background: #f1f3f5;
+      border-radius: 4px;
+    }
+    table.gastos-table .display-text:empty::before {
+      content: attr(data-placeholder);
+      color: #aab3bc;
+      font-style: italic;
+      font-weight: 300;
+    }
+
+    select {
+      padding: 0.2rem 1.2rem 0.2rem 0.5rem;
+      border: 2px solid #e9ecef;
+      border-radius: 6px;
+      background: #ffffff;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: #2c3e50;
+      outline: none;
+      font-family: inherit;
+      cursor: pointer;
+      appearance: auto;
+      width: 100%;
+      transition: border-color 0.2s ease;
+    }
+    select:focus {
+      border-color: #2c3e50;
+      box-shadow: 0 0 0 3px rgba(44, 62, 80, 0.06);
+    }
+
+    .categoria-container {
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+      width: 100%;
+    }
+
+    .categoria-input {
+      display: none;
+      width: 100%;
+      padding: 0.2rem 0.4rem;
+      border: 2px solid #e9ecef;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-family: inherit;
+      outline: none;
+      color: #2c3e50;
+      background: #ffffff;
+    }
+    .categoria-input:focus {
+      border-color: #2c3e50;
+      box-shadow: 0 0 0 3px rgba(44, 62, 80, 0.06);
+    }
+
+    .table-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      align-items: center;
+      margin-top: 0.8rem;
+    }
+    .btn-outline {
+      background: transparent;
+      border: 1.5px solid #2c3e50;
+      color: #2c3e50;
+      padding: 0.3rem 1rem;
+      border-radius: 40px;
+      font-weight: 600;
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: 0.15s;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+    .btn-outline:hover {
+      background: #2c3e50;
+      color: #fff;
+      box-shadow: 0 6px 12px -6px rgba(44, 62, 80, 0.2);
+    }
+
+    .pdf-actions {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 1.5rem;
+    }
+    .btn-pdf {
+      background: #2c3e50;
+      border: none;
+      color: #fff;
+      padding: 0.7rem 2.2rem;
+      border-radius: 60px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      box-shadow: 0 10px 20px -8px rgba(44, 62, 80, 0.15);
+    }
+    .btn-pdf:hover {
+      background: #1a2a3a;
+      transform: scale(1.01);
+      box-shadow: 0 16px 28px -10px rgba(44, 62, 80, 0.2);
+    }
+
+    @media (max-width: 600px) {
+      .gastos-wrapper {
+        padding: 1.2rem;
+      }
+      .header-gastos {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.8rem;
+      }
+      .titulo-fecha {
+        text-align: left;
+      }
+      .resumen-filtros {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .filtros {
+        flex-direction: column;
+        align-items: stretch;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="gastos-wrapper" id="gastosApp">
+
+  <!-- HEADER -->
+  <div class="header-gastos">
+    <div class="logo-area">
+      <div class="logo-placeholder" id="logoPlaceholder" title="Haz clic para subir el logo">
+        <i class="fas fa-image" id="logoIcon"></i>
+        <span class="logo-texto">SUBIR LOGO</span>
+        <img id="logoImg" alt="Logo" />
+      </div>
+      <input type="file" id="logoUpload" class="logo-upload-input" accept="image/*" />
+    </div>
+    <div class="titulo-fecha">
+      <div class="titulo">Control de gastos</div>
+      <div class="fecha-edit">F. <input type="date" id="fechaGastos" /></div>
+    </div>
+  </div>
+
+  <!-- PANEL DE RESUMEN Y FILTROS -->
+  <div class="resumen-filtros">
+    <div class="resumen-totales">
+      <div class="resumen-item">
+        <span class="label">Total general:</span>
+        <span class="valor" id="totalGeneral">$0.00</span>
+      </div>
+      <div class="resumen-item">
+        <span class="label">Personales:</span>
+        <span class="valor personal" id="totalPersonal">$0.00</span>
+      </div>
+      <div class="resumen-item">
+        <span class="label">Empresariales:</span>
+        <span class="valor empresarial" id="totalEmpresarial">$0.00</span>
+      </div>
+    </div>
+
+    <div class="filtros">
+      <label for="filtroTipo">Tipo</label>
+      <select id="filtroTipo">
+        <option value="todos">Todos</option>
+        <option value="Personal">👤 Personal</option>
+        <option value="Empresarial">🏢 Empresarial</option>
+      </select>
+
+      <label for="filtroCategoria">Categoría</label>
+      <select id="filtroCategoria">
+        <option value="todas">Todas</option>
+        <option value="Comida">🍽️ Comida</option>
+        <option value="Transporte">🚗 Transporte</option>
+        <option value="Casa">🏠 Casa</option>
+        <option value="Servicios">🔧 Servicios</option>
+        <option value="Otros">📌 Otros</option>
+      </select>
+
+      <button class="btn-limpiar" id="limpiarFiltros">Limpiar</button>
+    </div>
+  </div>
+
+  <!-- TABLA -->
+  <h4 style="font-size:0.9rem; text-transform:uppercase; letter-spacing:0.05em; color:#2c3e50; font-weight:700; margin-bottom:0.3rem;">Registro de gastos</h4>
+
+  <div class="tabla-container">
+    <table class="gastos-table" id="tablaGastos">
+      <thead>
+        <tr>
+          <th style="min-width:100px;">Fecha</th>
+          <th style="min-width:100px;">Factura</th>
+          <th style="min-width:120px;">Categoría</th>
+          <th style="min-width:120px;">Pagado a</th>
+          <th style="min-width:150px;">Descripción</th>
+          <th style="min-width:120px;">Tipo de gasto</th>
+          <th style="min-width:110px; text-align:right;">Cantidad</th>
+        </tr>
+      </thead>
+      <tbody id="tablaBody">
+        <!-- TABLA VACÍA -->
+      </tbody>
+    </table>
+  </div>
+
+  <!-- BOTONES -->
+  <div class="table-actions">
+    <button class="btn-outline" id="addRowBtn"><i class="fas fa-plus-circle"></i> Añadir gasto</button>
+    <button class="btn-outline" id="removeRowBtn" style="border-color:#dde1e6; color:#7a8a9a;"><i class="fas fa-trash-alt"></i> Eliminar gasto</button>
+  </div>
+
+  <!-- PDF -->
+  <div class="pdf-actions">
+    <button class="btn-pdf" id="pdfBtn"><i class="fas fa-file-pdf"></i> Descargar PDF</button>
+  </div>
+
+</div>
+
+<script>
+  (function() {
+    "use strict";
+
+    // ==================== ELEMENTOS ====================
+    const tbody = document.getElementById('tablaBody');
+    const addBtn = document.getElementById('addRowBtn');
+    const removeBtn = document.getElementById('removeRowBtn');
+
+    const totalGeneralEl = document.getElementById('totalGeneral');
+    const totalPersonalEl = document.getElementById('totalPersonal');
+    const totalEmpresarialEl = document.getElementById('totalEmpresarial');
+
+    const filtroTipo = document.getElementById('filtroTipo');
+    const filtroCategoria = document.getElementById('filtroCategoria');
+    const limpiarBtn = document.getElementById('limpiarFiltros');
+
+    const logoPlaceholder = document.getElementById('logoPlaceholder');
+    const logoInput = document.getElementById('logoUpload');
+    const logoImg = document.getElementById('logoImg');
+    const logoIcon = document.getElementById('logoIcon');
+    const logoTexto = document.querySelector('.logo-texto');
+
+    const fechaInput = document.getElementById('fechaGastos');
+    if (!fechaInput.value) {
+      const hoy = new Date();
+      const yyyy = hoy.getFullYear();
+      const mm = String(hoy.getMonth() + 1).padStart(2, '0');
+      const dd = String(hoy.getDate()).padStart(2, '0');
+      fechaInput.value = `${yyyy}-${mm}-${dd}`;
+    }
+
+    // ==================== MAPAS DE COLORES ====================
+    const colorMapCategoria = {
+      'Comida': '#f59e0b',
+      'Transporte': '#3b82f6',
+      'Casa': '#10b981',
+      'Servicios': '#8b5cf6',
+      'Otros': '#ef4444'
+    };
+
+    const colorMapTipo = {
+      'Personal': '#3b82f6',
+      'Empresarial': '#10b981'
+    };
+
+    // ==================== FUNCIONES ====================
+    function obtenerCantidadDesdeFila(row) {
+      const celdaCantidad = row.querySelector('td:nth-child(7) .display-text');
+      if (!celdaCantidad) return 0;
+      let texto = celdaCantidad.textContent.trim();
+      texto = texto.replace(/[$,]/g, '').trim();
+      texto = texto.replace(',', '.');
+      const numero = parseFloat(texto);
+      return isNaN(numero) ? 0 : numero;
+    }
+
+    function obtenerTipoDesdeFila(row) {
+      const select = row.querySelector('td:nth-child(6) select.tipo-select');
+      return select ? select.value : 'Personal';
+    }
+
+    function obtenerCategoriaDesdeFila(row) {
+      const select = row.querySelector('.categoria-select');
+      if (!select) return 'Comida';
+      return select.value;
+    }
+
+    function actualizarResumen() {
+      const filas = tbody.querySelectorAll('tr:not(.filtrado)');
+      let totalGeneral = 0;
+      let totalPersonal = 0;
+      let totalEmpresarial = 0;
+
+      filas.forEach(row => {
+        const cantidad = obtenerCantidadDesdeFila(row);
+        const tipo = obtenerTipoDesdeFila(row);
+        totalGeneral += cantidad;
+        if (tipo === 'Personal') totalPersonal += cantidad;
+        else if (tipo === 'Empresarial') totalEmpresarial += cantidad;
+      });
+
+      totalGeneralEl.textContent = '$' + totalGeneral.toLocaleString('es-CL', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      totalPersonalEl.textContent = '$' + totalPersonal.toLocaleString('es-CL', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      totalEmpresarialEl.textContent = '$' + totalEmpresarial.toLocaleString('es-CL', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function aplicarFiltros() {
+      const tipo = filtroTipo.value;
+      const categoria = filtroCategoria.value;
+      const filas = tbody.querySelectorAll('tr');
+
+      filas.forEach(row => {
+        const rowTipo = obtenerTipoDesdeFila(row);
+        const rowCategoria = obtenerCategoriaDesdeFila(row);
+        let mostrar = true;
+
+        if (tipo !== 'todos' && rowTipo !== tipo) mostrar = false;
+        if (categoria !== 'todas' && rowCategoria !== categoria) mostrar = false;
+
+        row.classList.toggle('filtrado', !mostrar);
+      });
+
+      actualizarResumen();
+    }
+
+    // ==================== AGREGAR CATEGORÍA PERSONALIZADA AL FILTRO ====================
+    function agregarCategoriaAlFiltro(categoria) {
+      // Verificar si ya existe en el filtro
+      const opciones = Array.from(filtroCategoria.options);
+      const existe = opciones.some(opt => opt.value === categoria);
+      if (!existe && categoria !== 'todas' && categoria !== 'Comida' && categoria !== 'Transporte' && categoria !== 'Casa' && categoria !== 'Servicios' && categoria !== 'Otros') {
+        const option = document.createElement('option');
+        option.value = categoria;
+        option.textContent = categoria;
+        filtroCategoria.appendChild(option);
+      }
+    }
+
+    // ==================== CREAR FILA ====================
+    function crearFila(fecha = '', factura = '', categoria = 'Comida', pagadoA = '', descripcion = '', tipo = 'Personal', cantidad = 0) {
+      const tr = document.createElement('tr');
+
+      // Select de categoría
+      const selectCategoria = document.createElement('select');
+      selectCategoria.className = 'categoria-select';
+      selectCategoria.style.cssText =
+        'padding:0.2rem 1.2rem 0.2rem 0.5rem; border:2px solid #e9ecef; border-radius:6px; background:#ffffff; font-size:0.8rem; font-weight:500; color:#2c3e50; outline:none; font-family:inherit; cursor:pointer; appearance:auto; width:100%; transition: border-color 0.2s ease;';
+      selectCategoria.style.borderColor = colorMapCategoria[categoria] || '#e9ecef';
+
+      const categorias = [
+        { value: 'Comida', label: '🍽️ Comida' },
+        { value: 'Transporte', label: '🚗 Transporte' },
+        { value: 'Casa', label: '🏠 Casa' },
+        { value: 'Servicios', label: '🔧 Servicios' },
+        { value: 'Otros', label: '📌 Otros (personalizar)' }
+      ];
+
+      categorias.forEach(cat => {
+        const opt = document.createElement('option');
+        opt.value = cat.value;
+        opt.textContent = cat.label;
+        if (cat.value === categoria) opt.selected = true;
+        selectCategoria.appendChild(opt);
+      });
+
+      // Input para personalizar "Otros"
+      const inputOtros = document.createElement('input');
+      inputOtros.type = 'text';
+      inputOtros.className = 'categoria-input';
+      inputOtros.placeholder = 'Escribe la categoría y presiona Enter...';
+      inputOtros.style.cssText =
+        'width:100%; padding:0.2rem 0.4rem; border:2px solid #e9ecef; border-radius:6px; font-size:0.8rem; font-family:inherit; outline:none; color:#2c3e50; background:#ffffff;';
+
+      // Contenedor
+      const container = document.createElement('div');
+      container.className = 'categoria-container';
+      container.appendChild(selectCategoria);
+      container.appendChild(inputOtros);
+
+      // Evento para mostrar input al seleccionar "Otros"
+      selectCategoria.addEventListener('change', function() {
+        if (this.value === 'Otros') {
+          selectCategoria.style.display = 'none';
+          inputOtros.style.display = 'block';
+          inputOtros.value = '';
+          inputOtros.focus();
+          inputOtros.style.borderColor = '#ef4444';
+        } else {
+          selectCategoria.style.display = 'block';
+          inputOtros.style.display = 'none';
+          this.style.borderColor = colorMapCategoria[this.value] || '#e9ecef';
+          aplicarFiltros();
+        }
+      });
+
+      // Evento para input
+      inputOtros.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          const valor = this.value.trim();
+          if (valor !== '') {
+            // Agregar al filtro
+            agregarCategoriaAlFiltro(valor);
+
+            // Reemplazar el select por una opción personalizada
+            const option = document.createElement('option');
+            option.value = valor;
+            option.textContent = valor;
+            option.selected = true;
+
+            // Eliminar opciones personalizadas anteriores (excepto las fijas)
+            const opcionesFijas = ['Comida', 'Transporte', 'Casa', 'Servicios', 'Otros'];
+            Array.from(selectCategoria.options).forEach(opt => {
+              if (!opcionesFijas.includes(opt.value) && opt.value !== valor) {
+                selectCategoria.remove(opt.index);
+              }
+            });
+
+            // Insertar la nueva opción antes de "Otros"
+            const otrosOption = Array.from(selectCategoria.options).find(opt => opt.value === 'Otros');
+            if (otrosOption) {
+              selectCategoria.insertBefore(option, otrosOption);
+            } else {
+              selectCategoria.appendChild(option);
+            }
+
+            selectCategoria.value = valor;
+            selectCategoria.style.display = 'block';
+            inputOtros.style.display = 'none';
+            aplicarFiltros();
+          } else {
+            // Si no escribe nada, volver a "Otros"
+            selectCategoria.value = 'Otros';
+            selectCategoria.style.display = 'block';
+            inputOtros.style.display = 'none';
+            aplicarFiltros();
+          }
+        }
+      });
+
+      // Si el input pierde foco sin guardar, volver al select
+      inputOtros.addEventListener('blur', function() {
+        if (this.style.display === 'block') {
+          selectCategoria.value = 'Comida';
+          selectCategoria.style.display = 'block';
+          this.style.display = 'none';
+          aplicarFiltros();
+        }
+      });
+
+      // Select de tipo
+      const selectTipo = document.createElement('select');
+      selectTipo.className = 'tipo-select';
+      selectTipo.style.cssText =
+        'padding:0.2rem 1.2rem 0.2rem 0.5rem; border:2px solid #e9ecef; border-radius:6px; background:#ffffff; font-size:0.8rem; font-weight:500; color:#2c3e50; outline:none; font-family:inherit; cursor:pointer; appearance:auto; width:100%; transition: border-color 0.2s ease;';
+      selectTipo.style.borderColor = colorMapTipo[tipo] || '#e9ecef';
+
+      const tipos = [
+        { value: 'Personal', label: '👤 Personal' },
+        { value: 'Empresarial', label: '🏢 Empresarial' }
+      ];
+
+      tipos.forEach(t => {
+        const opt = document.createElement('option');
+        opt.value = t.value;
+        opt.textContent = t.label;
+        if (t.value === tipo) opt.selected = true;
+        selectTipo.appendChild(opt);
+      });
+
+      selectTipo.addEventListener('change', function() {
+        this.style.borderColor = colorMapTipo[this.value] || '#e9ecef';
+        aplicarFiltros();
+      });
+
+      // Formatear cantidad
+      const cantidadFormateada = cantidad ? '$' + cantidad.toLocaleString('es-CL', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '';
+
+      // Construir fila
+      tr.innerHTML = `
+        <td><span class="display-text" contenteditable="true" data-placeholder="Fecha">${fecha}</span></td>
+        <td><span class="display-text" contenteditable="true" data-placeholder="Factura">${factura}</span></td>
+        <td></td>
+        <td><span class="display-text" contenteditable="true" data-placeholder="Pagado a">${pagadoA}</span></td>
+        <td><span class="display-text" contenteditable="true" data-placeholder="Descripción">${descripcion}</span></td>
+        <td></td>
+        <td style="text-align:right; padding-right:0.8rem;"><span class="display-text" contenteditable="true" data-placeholder="$0.00" data-align="right" style="text-align:right;">${cantidadFormateada}</span></td>
+      `;
+
+      // Insertar elementos en la celda de categoría
+      const celdaCategoria = tr.querySelector('td:nth-child(3)');
+      celdaCategoria.appendChild(container);
+
+      // Insertar select de tipo
+      const celdaTipo = tr.querySelector('td:nth-child(6)');
+      celdaTipo.appendChild(selectTipo);
+
+      // Eventos para actualizar filtros al editar
+      const inputs = tr.querySelectorAll('.display-text');
+      inputs.forEach(inp => {
+        inp.addEventListener('input', function() {
+          aplicarFiltros();
+        });
+      });
+
+      return tr;
+    }
+
+    // ==================== INICIALIZAR (TABLA VACÍA) ====================
+    function initFilas() {
+      tbody.innerHTML = '';
+      aplicarFiltros();
+    }
+    initFilas();
+
+    // ==================== BOTONES ====================
+    addBtn.addEventListener('click', function() {
+      const tr = crearFila('', '', 'Comida', '', '', 'Personal', 0);
+      tbody.appendChild(tr);
+      aplicarFiltros();
+    });
+
+    removeBtn.addEventListener('click', function() {
+      const filas = tbody.querySelectorAll('tr');
+      if (filas.length > 0) {
+        filas[filas.length - 1].remove();
+        aplicarFiltros();
+      } else {
+        alert('No hay gastos para eliminar.');
+      }
+    });
+
+    // ==================== FILTROS ====================
+    filtroTipo.addEventListener('change', aplicarFiltros);
+    filtroCategoria.addEventListener('change', aplicarFiltros);
+    limpiarBtn.addEventListener('click', function() {
+      filtroTipo.value = 'todos';
+      filtroCategoria.value = 'todas';
+      aplicarFiltros();
+    });
+
+    // ==================== LOGO ====================
+    logoPlaceholder.addEventListener('click', function() { logoInput.click(); });
+    logoInput.addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(ev) {
+          logoImg.src = ev.target.result;
+          logoImg.style.display = 'block';
+          logoIcon.style.display = 'none';
+          if (logoTexto) logoTexto.style.display = 'none';
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    // ==================== PDF ====================
+    document.getElementById('pdfBtn').addEventListener('click', function() {
+      if (typeof html2canvas === 'undefined' || typeof jsPDF === 'undefined') {
+        const s1 = document.createElement('script');
+        s1.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+        s1.onload = function() {
+          const s2 = document.createElement('script');
+          s2.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+          s2.onload = function() { generarPDF(); };
+          document.head.appendChild(s2);
+        };
+        document.head.appendChild(s1);
+      } else {
+        generarPDF();
+      }
+    });
+
+    function generarPDF() {
+      const wrapper = document.getElementById('gastosApp');
+
+      const acciones = wrapper.querySelector('.table-actions');
+      const pdfBtn = wrapper.querySelector('.pdf-actions');
+      const addBtnOrig = wrapper.querySelector('#addRowBtn');
+      const removeBtnOrig = wrapper.querySelector('#removeRowBtn');
+
+      const accDisplay = acciones ? acciones.style.display : '';
+      const pdfDisplay = pdfBtn ? pdfBtn.style.display : '';
+      if (acciones) acciones.style.display = 'none';
+      if (pdfBtn) pdfBtn.style.display = 'none';
+      if (addBtnOrig) addBtnOrig.style.display = 'none';
+      if (removeBtnOrig) removeBtnOrig.style.display = 'none';
+
+      const logoIconEl = wrapper.querySelector('#logoIcon');
+      const logoTextEl = wrapper.querySelector('.logo-texto');
+      if (logoIconEl) logoIconEl.style.display = 'none';
+      if (logoTextEl) logoTextEl.style.display = 'none';
+
+      const wrapperWidth = wrapper.scrollWidth;
+      const wrapperHeight = wrapper.scrollHeight;
+
+      html2canvas(wrapper, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff',
+        logging: false,
+        width: wrapperWidth,
+        height: wrapperHeight,
+        windowWidth: wrapperWidth,
+        windowHeight: wrapperHeight,
+        onclone: function(doc) {
+          const titulo = doc.querySelector('.titulo-fecha .titulo');
+          if (titulo) {
+            titulo.style.background = 'none';
+            titulo.style.color = '#2c3e50';
+            titulo.style.webkitTextFillColor = '#2c3e50';
+          }
+          const ths = doc.querySelectorAll('table.gastos-table thead th');
+          ths.forEach(th => {
+            th.style.background = '#2c3e50';
+            th.style.color = '#ffffff';
+          });
+        }
+      }).then(function(canvas) {
+        if (acciones) acciones.style.display = accDisplay || '';
+        if (pdfBtn) pdfBtn.style.display = pdfDisplay || '';
+        if (addBtnOrig) addBtnOrig.style.display = '';
+        if (removeBtnOrig) removeBtnOrig.style.display = '';
+        if (logoIconEl) logoIconEl.style.display = '';
+        if (logoTextEl) logoTextEl.style.display = '';
+
+        const { jsPDF } = window.jspdf;
+        const imgWidth = canvas.width;
+        const imgHeight = canvas.height;
+        const pxToMm = 0.264583;
+        const pdfWidth = imgWidth * pxToMm;
+        const pdfHeight = imgHeight * pxToMm;
+
+        const pdf = new jsPDF({
+          orientation: pdfWidth > pdfHeight ? 'l' : 'p',
+          unit: 'mm',
+          format: [pdfWidth, pdfHeight]
+        });
+
+        pdf.addImage(canvas, 'PNG', 0, 0, pdfWidth, pdfHeight);
+        pdf.save('control-de-gastos.pdf');
+
+      }).catch(function(err) {
+        console.error(err);
+        alert('Error al generar PDF: ' + err.message);
+        if (acciones) acciones.style.display = accDisplay || '';
+        if (pdfBtn) pdfBtn.style.display = pdfDisplay || '';
+        if (addBtnOrig) addBtnOrig.style.display = '';
+        if (removeBtnOrig) removeBtnOrig.style.display = '';
+        if (logoIconEl) logoIconEl.style.display = '';
+        if (logoTextEl) logoTextEl.style.display = '';
+      });
+    }
+
+  })();
+</script>
+
+</body>
+</html>
